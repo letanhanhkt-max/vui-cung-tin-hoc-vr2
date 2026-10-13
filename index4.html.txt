@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
+  <title>Vui Cùng Tin Học VR - Tư Thế Ngồi Máy Tính Đúng Cách</title>
+  
+  <!-- Nạp A-Frame 1.5.0 chuẩn W3C WebXR -->
+  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+
+  <style>
+    /* GIAO DIỆN HỌC TẬP CÔNG THÁI HỌC (HUD ERGONOMICS UI) */
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; }
+
+    /* Thanh điều hướng bài học phía trên */
+    #top-nav {
+      position: absolute;
+      top: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99999;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.94);
+      padding: 8px 18px;
+      border-radius: 35px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .nav-btn {
+      background: #0288D1;
+      color: #FFFFFF;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .nav-btn:hover { background: #03A9F4; transform: translateY(-2px); }
+    .nav-btn.active { background: #2E7D32; box-shadow: 0 0 10px #4CAF50; }
+    .nav-btn.alert { background: #C62828; }
+    .nav-btn.eye { background: #7B1FA2; }
+
+    /* Thẻ hướng dẫn kiến thức sức khỏe phía dưới */
+    #instruction-card {
+      position: absolute;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 99999;
+      width: 92%;
+      max-width: 820px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 2px solid #00E5FF;
+      border-radius: 16px;
+      padding: 14px 22px;
+      color: #FFFFFF;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      text-align: center;
+      backdrop-filter: blur(8px);
+    }
+    #lesson-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #00E5FF;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      margin-bottom: 5px;
+    }
+    #guide-text {
+      font-size: 15px;
+      line-height: 1.5;
+      font-weight: 500;
+      color: #FFF9C4;
+      min-height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #control-panel {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 15px;
+    }
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #80D8FF;
+    }
+    input[type=range] {
+      width: 140px;
+      cursor: pointer;
+    }
+    #badge-health {
+      background: #2E7D32;
+      color: #FFF;
+      padding: 4px 14px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: bold;
+    }
+  </style>
+
+  <script>
+    // BỘ PHÁT ÂM THANH NỘI TẠI (WEB AUDIO API - ZERO NETWORK)
+    class SoundEngine {
+      constructor() { this.ctx = null; }
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, dur = 0.1, type = 'sine') {
+        this.init();
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + dur);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start();
+        osc.stop(this.ctx.currentTime + dur);
+      }
+      playCorrect() { this.playTone(587.33, 0.15); setTimeout(() => this.playTone(880, 0.25), 150); }
+      playWarning() { this.playTone(220, 0.25, 'sawtooth'); }
+    }
+    const sound = new SoundEngine();
+
+    // HỆ THỐNG QUẢN LÝ SƯ PHẠM VÀ TƯ THẾ HỌC SINH (ERGONOMICS SYSTEM)
+    AFRAME.registerComponent('posture-system', {
+      init: function () {
+        this.currentMode = 'good'; // 'good', 'bad', 'eye'
+        this.distanceVal = 65; // Khoảng cách thực tế (cm)
+
+        this.avatar = document.querySelector('#avatar-student');
+        this.spine = document.querySelector('#avatar-spine');
+        this.head = document.querySelector('#avatar-head');
+        this.eyeTarget = document.querySelector('#eye-target');
+        this.laserBeam = document.querySelector('#laser-distance');
+        this.guideText = document.querySelector('#guide-text');
+        this.healthBadge = document.querySelector('#badge-health');
+
+        this.applyGoodPosture();
+      },
+
+      applyGoodPosture: function () {
+        this.currentMode = 'good';
+        sound.playCorrect();
+
+        // Tư thế thẳng lưng, đầu thẳng, mắt ngang màn hình
+        this.avatar.setAttribute('animation', 'property: position; to: 0 0 -0.85; dur: 600; easing: easeInOutQuad');
+        this.spine.setAttribute('animation', 'property: rotation; to: 0 0 0; dur: 600');
+        this.head.setAttribute('animation', 'property: rotation; to: 0 0 0; dur: 600');
+        this.spine.setAttribute('material', 'color', '#4CAF50'); // Xanh lá: Xương sống khỏe
+        
+        // Thước đo tia laser báo chuẩn
+        this.laserBeam.setAttribute('material', 'color', '#00E676');
+        this.laserBeam.setAttribute('scale', '1 1 0.65');
+
+        this.healthBadge.innerText = "Trạng thái: Cột sống thẳng - Khoảng cách 65 cm (AN TOÀN)";
+        this.healthBadge.style.background = "#2E7D32";
+        this.guideText.innerHTML = "✅ <b>TƯ THẾ ĐÚNG:</b> Lưng ngồi thẳng tựa nhẹ vào ghế, tay đặt ngang tầm bàn phím, hai chân đặt phẳng trên sàn. Mắt nhìn ngang tầm và cách màn hình 50 - 80 cm.";
+      },
+
+      applyBadPosture: function () {
+        this.currentMode = 'bad';
+        sound.playWarning();
+
+        // Tư thế gù lưng, cắm mặt sát màn hình (chỉ 25 cm)
+        this.avatar.setAttribute('animation', 'property: position; to: 0 0.05 -1.25; dur: 600; easing: easeInOutQuad');
+        this.spine.setAttribute('animation', 'property: rotation; to: 35 0 0; dur: 600'); // Cột sống gù 35 độ
+        this.head.setAttribute('animation', 'property: rotation; to: -20 0 0; dur: 600'); // Ngước cổ mỏi
+        this.spine.setAttribute('material', 'color', '#F44336'); // Đỏ: Nguy cơ thoái hóa/vẹo cột sống
+        
+        this.laserBeam.setAttribute('material', 'color', '#FF1744');
+        this.laserBeam.setAttribute('scale', '1 1 0.25');
+
+        this.healthBadge.innerText = "Trạng thái: GÙ LƯNG - Mắt quá gần (25 cm) (NGUY HIỂM)";
+        this.healthBadge.style.background = "#C62828";
+        this.guideText.innerHTML = "⚠️ <b>HẬU QUẢ TƯ THẾ SAI:</b> Ngồi cúi gục gây cong vẹo cột sống, đau vai gáy. Mắt cách dưới 50 cm gây cận thị và nhức mỏi điều tiết!";
+      },
+
+      startEyeRelaxation: function () {
+        this.currentMode = 'eye';
+        sound.playCorrect();
+
+        // Chuyển góc nhìn cận cảnh vào màn hình và bắt đầu bài tập thể dục mắt
+        const rig = document.querySelector('#camera-rig');
+        rig.setAttribute('animation', 'property: position; to: 0 1.15 -0.9; dur: 800; easing: easeInOutQuad');
+        
+        this.healthBadge.innerText = "Quy tắc 30 phút: Thể dục thư giãn mắt";
+        this.healthBadge.style.background = "#7B1FA2";
+        this.guideText.innerHTML = "👀 <b>BÀI TẬP MẮT (Sau mỗi 30 phút):</b> Hãy nhìn theo đốm sáng màu vàng di chuyển 4 hướng (Lên - Xuống - Trái - Phải) để cơ mắt được thư giãn!";
+
+        // Kích hoạt quả cầu thể dục mắt chuyển động tuần hoàn
+        this.eyeTarget.setAttribute('visible', 'true');
+        this.eyeTarget.setAttribute('animation', 'property: position; dir: alternate; dur: 2000; loop: true; to: 0.35 1.25 -1.48; from: -0.35 0.95 -1.48');
+      },
+
+      setDistance: function (val) {
+        this.distanceVal = val;
+        document.querySelector('#dist-display').innerText = val + ' cm';
+        
+        // Điều chỉnh vị trí avatar theo khoảng cách kéo
+        const zPos = -1.5 + (val / 100);
+        this.avatar.setAttribute('position', `0 0 ${zPos}`);
+        this.laserBeam.setAttribute('scale', `1 1 ${val / 100}`);
+
+        if (val >= 50 && val <= 80) {
+          this.laserBeam.setAttribute('material', 'color', '#00E676');
+          this.healthBadge.innerText = `Khoảng cách: ${val} cm (ĐẠT CHUẨN 50 - 80 CM)`;
+          this.healthBadge.style.background = "#2E7D32";
+        } else {
+          this.laserBeam.setAttribute('material', 'color', '#FF1744');
+          this.healthBadge.innerText = `Khoảng cách: ${val} cm (KHÔNG ĐẠT - DỄ HỎNG MẮT)`;
+          this.healthBadge.style.background = "#C62828";
+        }
+      }
+    });
+
+    // CHUYỂN GIAO DIỆN
+    function setPosture(type) {
+      const scene = document.querySelector('a-scene');
+      const sys = scene.components['posture-system'];
+      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+      if (type === 'good') {
+        document.querySelector('#btn-good').classList.add('active');
+        document.querySelector('#eye-target').setAttribute('visible', 'false');
+        resetCamera();
+        sys.applyGoodPosture();
+      } else if (type === 'bad') {
+        document.querySelector('#btn-bad').classList.add('active');
+        document.querySelector('#eye-target').setAttribute('visible', 'false');
+        resetCamera();
+        sys.applyBadPosture();
+      } else if (type === 'eye') {
+        document.querySelector('#btn-eye').classList.add('active');
+        sys.startEyeRelaxation();
+      }
+    }
+
+    function resetCamera() {
+      const rig = document.querySelector('#camera-rig');
+      rig.setAttribute('animation', 'property: position; to: 1.1 1.25 -0.5; dur: 800; easing: easeInOutQuad');
+      rig.setAttribute('animation__rot', 'property: rotation; to: 0 45 0; dur: 800');
+    }
+
+    function updateSlider(val) {
+      const scene = document.querySelector('a-scene');
+      scene.components['posture-system'].setDistance(val);
+    }
+  </script>
+</head>
+
+<body>
+  <!-- THANH CHỌN CHẾ ĐỘ PHÍA TRÊN -->
+  <div id="top-nav">
+    <button id="btn-good" class="nav-btn active" onclick="setPosture('good')">✅ Tư thế ngồi ĐÚNG</button>
+    <button id="btn-bad" class="nav-btn alert" onclick="setPosture('bad')">❌ Tư thế ngồi SAI (Nguy hại)</button>
+    <button id="btn-eye" class="nav-btn eye" onclick="setPosture('eye')">👀 Bài tập thư giãn mắt (30p)</button>
+  </div>
+
+  <!-- THẺ HƯỚNG DẪN HỌC TẬP & CÔNG THÁI HỌC -->
+  <div id="instruction-card">
+    <div id="lesson-title">BÀI HỌC SỨC KHỎE: TƯ THẾ NGỒI VÀ BẢO VỆ MẮT KHI DÙNG MÁY TÍNH</div>
+    <div id="guide-text">Đang tải mô hình thực tế ảo...</div>
+    <div id="control-panel">
+      <div class="slider-container">
+        <span>Thử kéo cự ly mắt:</span>
+        <input type="range" id="dist-slider" min="20" max="100" value="65" oninput="updateSlider(this.value)">
+        <span id="dist-display">65 cm</span>
+      </div>
+      <span id="badge-health">Trạng thái: Cột sống thẳng (AN TOÀN)</span>
+    </div>
+  </div>
+
+  <!-- KHÔNG GIAN THỰC TẾ ẢO A-FRAME WEBXR -->
+  <a-scene 
+    cursor="rayOrigin: mouse" 
+    posture-system 
+    background="color: #ECEFF1"
+    renderer="antialias: true; powerPreference: high-performance">
+    
+    <!-- CAMERA RIG (Góc nhìn ngang cạnh sườn để thấy rõ cột sống và cự ly mắt) -->
+    <a-entity id="camera-rig" position="1.1 1.25 -0.5" rotation="0 45 0">
+      <a-camera look-controls wasd-controls>
+        <a-cursor color="#FF9800" fuse="true" fuse-timeout="1200" raycaster="objects: .clickable"></a-cursor>
+      </a-camera>
+    </a-entity>
+
+    <!-- ÁNH SÁNG PHÒNG HỌC -->
+    <a-entity light="type: ambient; color: #FFFFFF; intensity: 0.9"></a-entity>
+    <a-entity light="type: directional; position: 2 4 1; intensity: 0.5"></a-entity>
+
+    <!-- SÀN PHÒNG HỌC & TƯỜNG -->
+    <a-plane position="0 0 -1.5" rotation="-90 0 0" width="10" height="10" color="#B0BEC5"></a-plane>
+    <a-plane position="0 2.5 -3.5" width="10" height="5" color="#ECEFF1"></a-plane>
+
+    <!-- ================= BÀN MÁY TÍNH & MÀN HÌNH ================= -->
+    <a-box position="0 0.7 -1.5" width="1.6" height="0.05" depth="0.8" color="#5D4037"></a-box>
+    <a-cylinder position="-0.7 0.35 -1.2" radius="0.03" height="0.7" color="#3E2723"></a-cylinder>
+    <a-cylinder position="0.7 0.35 -1.2" radius="0.03" height="0.7" color="#3E2723"></a-cylinder>
+
+    <!-- Màn hình máy tính (Ngang tầm mắt học sinh ~ 1.1m) -->
+    <a-box position="0 1.08 -1.5" width="0.75" height="0.48" depth="0.04" color="#212121">
+      <a-plane id="monitor-screen" position="0 0 0.022" width="0.7" height="0.44" color="#0288D1">
+        <a-entity text="value: KHOANG CACH AN TOAN\n50 - 80 CM; align: center; width: 1.6; color: #FFF" position="0 0 0.01"></a-entity>
+      </a-plane>
+    </a-box>
+    <a-cylinder position="0 0.77 -1.5" radius="0.025" height="0.1" color="#424242"></a-cylinder>
+    <a-box position="0 0.73 -1.5" width="0.25" height="0.02" depth="0.2" color="#303030"></a-box>
+
+    <!-- Bàn phím (Đặt ngang tầm khuỷu tay) -->
+    <a-box position="0 0.74 -1.25" width="0.46" height="0.015" depth="0.16" color="#37474F"></a-box>
+
+    <!-- ĐỐM SÁNG BÀI TẬP THỂ DỤC MẮT (CHUYỂN ĐỘNG TRÊN MÀN HÌNH) -->
+    <a-sphere id="eye-target" visible="false" position="0 1.1 -1.48" radius="0.025" color="#FFD600"></a-sphere>
+
+    <!-- TIA THƯỚC ĐO KHOẢNG CÁCH TỪ MẮT TỚI MÀN HÌNH (LASER DISTANCE) -->
+    <a-cylinder id="laser-distance" position="0 1.12 -1.18" rotation="90 0 0" radius="0.004" height="0.65" color="#00E676"></a-cylinder>
+
+    <!-- ================= GHẾ VÀ HỌC SINH MÔ PHỎNG (AVATAR) ================= -->
+    <a-entity id="avatar-student" position="0 0 -0.85">
+      
+      <!-- GHẾ NGỒI HỌC SINH -->
+      <a-box position="0 0.45 0" width="0.45" height="0.05" depth="0.45" color="#1E88E5"></a-box>
+      <a-cylinder position="0 0.22 0" radius="0.04" height="0.45" color="#424242"></a-cylinder>
+      <a-cylinder position="-0.18 0.02 -0.18" radius="0.02" height="0.04" color="#212121"></a-cylinder>
+      <a-cylinder position="0.18 0.02 -0.18" radius="0.02" height="0.04" color="#212121"></a-cylinder>
+      <a-cylinder position="-0.18 0.02 0.18" radius="0.02" height="0.04" color="#212121"></a-cylinder>
+      <a-cylinder position="0.18 0.02 0.18" radius="0.02" height="0.04" color="#212121"></a-cylinder>
+      <!-- Tựa lưng ghế -->
+      <a-box position="0 0.75 0.2" width="0.42" height="0.55" depth="0.04" color="#1565C0"></a-box>
+
+      <!-- HAI CHÂN HỌC SINH ĐỂ VUÔNG GÓC TRÊN MẶT SÀN -->
+      <a-box position="-0.12 0.25 -0.12" width="0.08" height="0.45" depth="0.08" color="#37474F"></a-box>
+      <a-box position="0.12 0.25 -0.12" width="0.08" height="0.45" depth="0.08" color="#37474F"></a-box>
+      <a-box position="-0.12 0.02 -0.2" width="0.1" height="0.04" depth="0.16" color="#263238"></a-box>
+      <a-box position="0.12 0.02 -0.2" width="0.1" height="0.04" depth="0.16" color="#263238"></a-box>
+
+      <!-- KHỐI CỘT SỐNG & LƯNG (CÓ KHẢ NĂNG BẺ CONG GÙ HOẶC THẲNG ĐỨNG) -->
+      <a-entity id="avatar-spine" position="0 0.48 0">
+        <!-- Thân người -->
+        <a-box position="0 0.25 0" width="0.32" height="0.5" depth="0.2" color="#FF9800"></a-box>
+
+        <!-- Cánh tay đặt ngang tầm bàn phím -->
+        <a-box position="-0.2 0.35 -0.15" rotation="20 0 0" width="0.06" height="0.35" depth="0.06" color="#FFA726"></a-box>
+        <a-box position="0.2 0.35 -0.15" rotation="20 0 0" width="0.06" height="0.35" depth="0.06" color="#FFA726"></a-box>
+
+        <!-- ĐẦU VÀ MẮT HƯỚNG THẲNG -->
+        <a-entity id="avatar-head" position="0 0.58 0">
+          <a-sphere radius="0.12" color="#FFCC80"></a-sphere>
+          <!-- Mắt (Hướng ngang tầm màn hình) -->
+          <a-sphere position="-0.04 0.02 -0.11" radius="0.02" color="#212121"></a-sphere>
+          <a-sphere position="0.04 0.02 -0.11" radius="0.02" color="#212121"></a-sphere>
+        </a-entity>
+      </a-entity>
+
+    </a-entity>
+
+  </a-scene>
+</body>
+</html>
