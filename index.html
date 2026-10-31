@@ -1,379 +1,1529 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-  <title>Vui Cùng Tin Học VR - Tư Thế Ngồi Máy Tính Đúng Cách</title>
-  
-  <!-- Nạp A-Frame 1.5.0 chuẩn W3C WebXR -->
-  <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
-
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Bài 4: Làm Việc Với Máy Tính - Mô Phỏng VR 360° Tin Học Lớp 3</title>
+  <!-- Thư viện Three.js chính thức từ CDN ổn định -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
-    /* GIAO DIỆN HỌC TẬP CÔNG THÁI HỌC (HUD ERGONOMICS UI) */
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
-    body, html { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0f172a; }
+    :root {
+      --primary: #0288d1;
+      --success: #2e7d32;
+      --warning: #ef6c00;
+      --danger: #c62828;
+      --purple: #6a1b9a;
+      --bg-panel: rgba(15, 23, 42, 0.92);
+      --font-scale: 1;
+    }
+    * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+    body, html {
+      margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #87CEEB;
+      font-size: calc(15px * var(--font-scale));
+    }
+    #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
 
-    /* Thanh điều hướng bài học phía trên */
-    #top-nav {
-      position: absolute;
-      top: 12px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 99999;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      background: rgba(15, 23, 42, 0.94);
-      padding: 8px 18px;
-      border-radius: 35px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
-      border: 1px solid rgba(255, 255, 255, 0.18);
+    /* MÀN HÌNH KHỞI ĐỘNG */
+    #start-modal {
+      position: absolute; inset: 0; z-index: 1000;
+      background: linear-gradient(135deg, rgba(2, 136, 209, 0.95), rgba(38, 166, 154, 0.95));
+      display: flex; align-items: center; justify-content: center; padding: 20px;
     }
-    .nav-btn {
-      background: #0288D1;
-      color: #FFFFFF;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s ease;
+    .start-box {
+      background: #ffffff; border-radius: 28px; padding: 28px 32px; max-width: 720px; width: 100%;
+      text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.35); border: 5px solid #ffca28;
     }
-    .nav-btn:hover { background: #03A9F4; transform: translateY(-2px); }
-    .nav-btn.active { background: #2E7D32; box-shadow: 0 0 10px #4CAF50; }
-    .nav-btn.alert { background: #C62828; }
-    .nav-btn.eye { background: #7B1FA2; }
+    .start-badge {
+      display: inline-block; background: #e1f5fe; color: #0277bd; font-weight: 800;
+      padding: 6px 18px; border-radius: 20px; font-size: 0.95rem; margin-bottom: 10px;
+    }
+    .start-title { color: #d84315; font-size: 2rem; font-weight: 900; margin: 5px 0 10px; }
+    .start-sub { color: #37474f; font-size: 1.15rem; font-weight: 600; margin-bottom: 24px; }
+    .start-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .big-btn {
+      border: none; border-radius: 18px; padding: 16px 14px; font-size: 1.05rem; font-weight: 800;
+      color: #fff; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+    }
+    .big-btn:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+    .btn-blue { background: linear-gradient(135deg, #0288d1, #03a9f4); }
+    .btn-green { background: linear-gradient(135deg, #2e7d32, #4caf50); }
+    .btn-orange { background: linear-gradient(135deg, #ef6c00, #ff9800); }
+    .btn-vr-start {
+      background: linear-gradient(135deg, #6a1b9a, #ab47bc); width: 100%; padding: 14px;
+      border-radius: 16px; font-size: 1.1rem; font-weight: 800; color: #fff; border: none; cursor: pointer;
+    }
 
-    /* Thẻ hướng dẫn kiến thức sức khỏe phía dưới */
-    #instruction-card {
-      position: absolute;
-      bottom: 16px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 99999;
-      width: 92%;
-      max-width: 820px;
-      background: rgba(15, 23, 42, 0.95);
-      border: 2px solid #00E5FF;
-      border-radius: 16px;
-      padding: 14px 22px;
-      color: #FFFFFF;
-      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
-      text-align: center;
-      backdrop-filter: blur(8px);
+    /* THANH CÔNG CỤ PHÍA TRÊN */
+    #top-bar {
+      position: absolute; top: 10px; left: 10px; right: 10px; z-index: 100;
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
+      pointer-events: none;
     }
-    #lesson-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #00E5FF;
-      letter-spacing: 1.2px;
-      text-transform: uppercase;
-      margin-bottom: 5px;
+    .nav-group, .util-group {
+      display: flex; flex-wrap: wrap; gap: 6px; background: var(--bg-panel);
+      padding: 7px 12px; border-radius: 26px; pointer-events: auto;
+      border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.35);
     }
-    #guide-text {
-      font-size: 15px;
-      line-height: 1.5;
-      font-weight: 500;
-      color: #FFF9C4;
-      min-height: 42px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .tab-btn, .icon-btn {
+      border: none; border-radius: 18px; padding: 7px 13px; font-size: 0.88rem; font-weight: 700;
+      color: #fff; background: rgba(255,255,255,0.12); cursor: pointer; transition: 0.2s;
     }
-    #control-panel {
-      margin-top: 8px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: center;
-      gap: 15px;
+    .tab-btn:hover, .icon-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.04); }
+    .tab-btn.active { background: #ffca28; color: #0f172a; box-shadow: 0 0 10px #ffca28; }
+
+    /* ĐỒNG HỒ SỬ DỤNG MÁY TÍNH (KHU VỰC 5) */
+    #timer-widget {
+      position: absolute; top: 68px; right: 14px; z-index: 95;
+      background: var(--bg-panel); color: #fff; padding: 10px 16px; border-radius: 18px;
+      border: 2px solid #4dd0e1; text-align: center; box-shadow: 0 4px 14px rgba(0,0,0,0.35);
     }
-    .slider-container {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #80D8FF;
+    #timer-label { font-size: 0.75rem; color: #80deea; font-weight: 800; letter-spacing: 0.5px; }
+    #timer-display { font-size: 1.45rem; font-weight: 900; color: #ffeb3b; margin: 2px 0 6px; font-family: monospace; }
+    .mini-btn {
+      background: #00acc1; color: #fff; border: none; border-radius: 10px;
+      padding: 4px 9px; font-size: 0.78rem; font-weight: 700; cursor: pointer; margin: 2px;
     }
-    input[type=range] {
-      width: 140px;
-      cursor: pointer;
+    .mini-btn:hover { background: #26c6da; }
+
+    /* TRỢ GIẢNG ẢO (GÓC TRÁI DƯỚI) */
+    #assistant-box {
+      position: absolute; bottom: 165px; left: 14px; z-index: 95;
+      display: flex; align-items: flex-end; gap: 10px; max-width: 360px; pointer-events: auto;
     }
-    #badge-health {
-      background: #2E7D32;
-      color: #FFF;
-      padding: 4px 14px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: bold;
+    .avatar-circle {
+      width: 58px; height: 58px; border-radius: 50%; background: #ffca28;
+      border: 3px solid #fff; display: flex; align-items: center; justify-content: center;
+      font-size: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.35); flex-shrink: 0; cursor: pointer;
+    }
+    .speech-bubble {
+      background: #ffffff; color: #1e293b; padding: 11px 15px; border-radius: 18px 18px 18px 4px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.3); border: 2px solid #0288d1; font-size: 0.92rem; line-height: 1.4;
+    }
+    .speech-name { font-weight: 800; color: #0277bd; font-size: 0.8rem; margin-bottom: 3px; display: flex; justify-content: space-between; }
+
+    /* BẢNG ĐIỀU KHIỂN KHU VỰC PHÍA DƯỚI */
+    #bottom-panel {
+      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 100;
+      width: 95%; max-width: 900px; background: var(--bg-panel); color: #fff;
+      border-radius: 22px; padding: 14px 20px; border: 2px solid #38bdf8;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.5); text-align: center;
+    }
+    #panel-title { font-size: 0.95rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; margin-bottom: 4px; }
+    #feedback-banner {
+      font-size: 1.05rem; font-weight: 700; color: #fef08a; min-height: 32px;
+      display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;
+      padding: 4px 12px; border-radius: 12px; background: rgba(255,255,255,0.07);
+    }
+    #interactive-controls {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px;
+    }
+    .ctrl-btn {
+      background: #0288d1; color: #fff; border: none; padding: 8px 14px; border-radius: 14px;
+      font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+    }
+    .ctrl-btn:hover { filter: brightness(1.15); transform: translateY(-2px); }
+    .ctrl-btn.good { background: #2e7d32; }
+    .ctrl-btn.bad { background: #c62828; }
+    .ctrl-btn.warn { background: #ef6c00; }
+    .ctrl-btn.purple { background: #7b1fa2; }
+
+    .slider-wrap {
+      display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.12);
+      padding: 6px 14px; border-radius: 16px; font-weight: 700;
+    }
+    input[type="range"] { width: 170px; accent-color: #00e676; cursor: pointer; }
+
+    /* MÀN HÌNH NGHỈ NGƠI 30 PHÚT & HƯỚNG DẪN MODAL */
+    .overlay-modal {
+      position: absolute; inset: 0; z-index: 950; background: rgba(15, 23, 42, 0.85);
+      display: none; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-card {
+      background: #f0fdf4; color: #14532d; border-radius: 26px; padding: 26px;
+      max-width: 620px; width: 100%; text-align: center; border: 4px solid #4ade80;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+    }
+    .relax-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 16px 0; }
+    .relax-btn {
+      background: #16a34a; color: #fff; border: none; padding: 12px; border-radius: 14px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+    }
+    .relax-btn:hover { background: #15803d; }
+
+    /* HUY HIỆU THỬ THÁCH */
+    .badge-bar { display: flex; justify-content: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+    .badge-item {
+      padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;
+      background: rgba(255,255,255,0.12); color: #94a3b8;
+    }
+    .badge-item.done { background: #16a34a; color: #fff; box-shadow: 0 0 8px #4ade80; }
+
+    /* CON TRỎ TÂM NGẮM VR / GAZE RETICLE */
+    #vr-reticle {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      width: 22px; height: 22px; border: 3px solid #ffca28; border-radius: 50%;
+      pointer-events: none; z-index: 50; display: none;
+    }
+    #vr-reticle.dwelling { border-color: #00e676; transform: translate(-50%, -50%) scale(1.4); transition: 1.2s; }
+
+    @media (max-width: 768px) {
+      .start-title { font-size: 1.5rem; }
+      #assistant-box { bottom: 185px; max-width: 280px; }
+      #timer-widget { top: auto; bottom: 185px; right: 10px; padding: 6px 10px; }
     }
   </style>
-
-  <script>
-    // BỘ PHÁT ÂM THANH NỘI TẠI (WEB AUDIO API - ZERO NETWORK)
-    class SoundEngine {
-      constructor() { this.ctx = null; }
-      init() {
-        if (!this.ctx) {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          this.ctx = new AudioContext();
-        }
-        if (this.ctx.state === 'suspended') this.ctx.resume();
-      }
-      playTone(freq, dur = 0.1, type = 'sine') {
-        this.init();
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-        gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + dur);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + dur);
-      }
-      playCorrect() { this.playTone(587.33, 0.15); setTimeout(() => this.playTone(880, 0.25), 150); }
-      playWarning() { this.playTone(220, 0.25, 'sawtooth'); }
-    }
-    const sound = new SoundEngine();
-
-    // HỆ THỐNG QUẢN LÝ SƯ PHẠM VÀ TƯ THẾ HỌC SINH (ERGONOMICS SYSTEM)
-    AFRAME.registerComponent('posture-system', {
-      init: function () {
-        this.currentMode = 'good'; // 'good', 'bad', 'eye'
-        this.distanceVal = 65; // Khoảng cách thực tế (cm)
-
-        this.avatar = document.querySelector('#avatar-student');
-        this.spine = document.querySelector('#avatar-spine');
-        this.head = document.querySelector('#avatar-head');
-        this.eyeTarget = document.querySelector('#eye-target');
-        this.laserBeam = document.querySelector('#laser-distance');
-        this.guideText = document.querySelector('#guide-text');
-        this.healthBadge = document.querySelector('#badge-health');
-
-        this.applyGoodPosture();
-      },
-
-      applyGoodPosture: function () {
-        this.currentMode = 'good';
-        sound.playCorrect();
-
-        // Tư thế thẳng lưng, đầu thẳng, mắt ngang màn hình
-        this.avatar.setAttribute('animation', 'property: position; to: 0 0 -0.85; dur: 600; easing: easeInOutQuad');
-        this.spine.setAttribute('animation', 'property: rotation; to: 0 0 0; dur: 600');
-        this.head.setAttribute('animation', 'property: rotation; to: 0 0 0; dur: 600');
-        this.spine.setAttribute('material', 'color', '#4CAF50'); // Xanh lá: Xương sống khỏe
-        
-        // Thước đo tia laser báo chuẩn
-        this.laserBeam.setAttribute('material', 'color', '#00E676');
-        this.laserBeam.setAttribute('scale', '1 1 0.65');
-
-        this.healthBadge.innerText = "Trạng thái: Cột sống thẳng - Khoảng cách 65 cm (AN TOÀN)";
-        this.healthBadge.style.background = "#2E7D32";
-        this.guideText.innerHTML = "✅ <b>TƯ THẾ ĐÚNG:</b> Lưng ngồi thẳng tựa nhẹ vào ghế, tay đặt ngang tầm bàn phím, hai chân đặt phẳng trên sàn. Mắt nhìn ngang tầm và cách màn hình 50 - 80 cm.";
-      },
-
-      applyBadPosture: function () {
-        this.currentMode = 'bad';
-        sound.playWarning();
-
-        // Tư thế gù lưng, cắm mặt sát màn hình (chỉ 25 cm)
-        this.avatar.setAttribute('animation', 'property: position; to: 0 0.05 -1.25; dur: 600; easing: easeInOutQuad');
-        this.spine.setAttribute('animation', 'property: rotation; to: 35 0 0; dur: 600'); // Cột sống gù 35 độ
-        this.head.setAttribute('animation', 'property: rotation; to: -20 0 0; dur: 600'); // Ngước cổ mỏi
-        this.spine.setAttribute('material', 'color', '#F44336'); // Đỏ: Nguy cơ thoái hóa/vẹo cột sống
-        
-        this.laserBeam.setAttribute('material', 'color', '#FF1744');
-        this.laserBeam.setAttribute('scale', '1 1 0.25');
-
-        this.healthBadge.innerText = "Trạng thái: GÙ LƯNG - Mắt quá gần (25 cm) (NGUY HIỂM)";
-        this.healthBadge.style.background = "#C62828";
-        this.guideText.innerHTML = "⚠️ <b>HẬU QUẢ TƯ THẾ SAI:</b> Ngồi cúi gục gây cong vẹo cột sống, đau vai gáy. Mắt cách dưới 50 cm gây cận thị và nhức mỏi điều tiết!";
-      },
-
-      startEyeRelaxation: function () {
-        this.currentMode = 'eye';
-        sound.playCorrect();
-
-        // Chuyển góc nhìn cận cảnh vào màn hình và bắt đầu bài tập thể dục mắt
-        const rig = document.querySelector('#camera-rig');
-        rig.setAttribute('animation', 'property: position; to: 0 1.15 -0.9; dur: 800; easing: easeInOutQuad');
-        
-        this.healthBadge.innerText = "Quy tắc 30 phút: Thể dục thư giãn mắt";
-        this.healthBadge.style.background = "#7B1FA2";
-        this.guideText.innerHTML = "👀 <b>BÀI TẬP MẮT (Sau mỗi 30 phút):</b> Hãy nhìn theo đốm sáng màu vàng di chuyển 4 hướng (Lên - Xuống - Trái - Phải) để cơ mắt được thư giãn!";
-
-        // Kích hoạt quả cầu thể dục mắt chuyển động tuần hoàn
-        this.eyeTarget.setAttribute('visible', 'true');
-        this.eyeTarget.setAttribute('animation', 'property: position; dir: alternate; dur: 2000; loop: true; to: 0.35 1.25 -1.48; from: -0.35 0.95 -1.48');
-      },
-
-      setDistance: function (val) {
-        this.distanceVal = val;
-        document.querySelector('#dist-display').innerText = val + ' cm';
-        
-        // Điều chỉnh vị trí avatar theo khoảng cách kéo
-        const zPos = -1.5 + (val / 100);
-        this.avatar.setAttribute('position', `0 0 ${zPos}`);
-        this.laserBeam.setAttribute('scale', `1 1 ${val / 100}`);
-
-        if (val >= 50 && val <= 80) {
-          this.laserBeam.setAttribute('material', 'color', '#00E676');
-          this.healthBadge.innerText = `Khoảng cách: ${val} cm (ĐẠT CHUẨN 50 - 80 CM)`;
-          this.healthBadge.style.background = "#2E7D32";
-        } else {
-          this.laserBeam.setAttribute('material', 'color', '#FF1744');
-          this.healthBadge.innerText = `Khoảng cách: ${val} cm (KHÔNG ĐẠT - DỄ HỎNG MẮT)`;
-          this.healthBadge.style.background = "#C62828";
-        }
-      }
-    });
-
-    // CHUYỂN GIAO DIỆN
-    function setPosture(type) {
-      const scene = document.querySelector('a-scene');
-      const sys = scene.components['posture-system'];
-      document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-
-      if (type === 'good') {
-        document.querySelector('#btn-good').classList.add('active');
-        document.querySelector('#eye-target').setAttribute('visible', 'false');
-        resetCamera();
-        sys.applyGoodPosture();
-      } else if (type === 'bad') {
-        document.querySelector('#btn-bad').classList.add('active');
-        document.querySelector('#eye-target').setAttribute('visible', 'false');
-        resetCamera();
-        sys.applyBadPosture();
-      } else if (type === 'eye') {
-        document.querySelector('#btn-eye').classList.add('active');
-        sys.startEyeRelaxation();
-      }
-    }
-
-    function resetCamera() {
-      const rig = document.querySelector('#camera-rig');
-      rig.setAttribute('animation', 'property: position; to: 1.1 1.25 -0.5; dur: 800; easing: easeInOutQuad');
-      rig.setAttribute('animation__rot', 'property: rotation; to: 0 45 0; dur: 800');
-    }
-
-    function updateSlider(val) {
-      const scene = document.querySelector('a-scene');
-      scene.components['posture-system'].setDistance(val);
-    }
-  </script>
 </head>
-
 <body>
-  <!-- THANH CHỌN CHẾ ĐỘ PHÍA TRÊN -->
-  <div id="top-nav">
-    <button id="btn-good" class="nav-btn active" onclick="setPosture('good')">✅ Tư thế ngồi ĐÚNG</button>
-    <button id="btn-bad" class="nav-btn alert" onclick="setPosture('bad')">❌ Tư thế ngồi SAI (Nguy hại)</button>
-    <button id="btn-eye" class="nav-btn eye" onclick="setPosture('eye')">👀 Bài tập thư giãn mắt (30p)</button>
-  </div>
 
-  <!-- THẺ HƯỚNG DẪN HỌC TẬP & CÔNG THÁI HỌC -->
-  <div id="instruction-card">
-    <div id="lesson-title">BÀI HỌC SỨC KHỎE: TƯ THẾ NGỒI VÀ BẢO VỆ MẮT KHI DÙNG MÁY TÍNH</div>
-    <div id="guide-text">Đang tải mô hình thực tế ảo...</div>
-    <div id="control-panel">
-      <div class="slider-container">
-        <span>Thử kéo cự ly mắt:</span>
-        <input type="range" id="dist-slider" min="20" max="100" value="65" oninput="updateSlider(this.value)">
-        <span id="dist-display">65 cm</span>
+  <!-- MÀN HÌNH KHỞI ĐỘNG (YÊU CẦU 3) -->
+  <div id="start-modal">
+    <div class="start-box">
+      <div class="start-badge">TIN HỌC LỚP 3 – KẾT NỐI TRI THỨC VỚI CUỘC SỐNG</div>
+      <h1 class="start-title">BÀI 4 – LÀM VIỆC VỚI MÁY TÍNH</h1>
+      <p class="start-sub">“Em cùng khám phá cách sử dụng máy tính đúng cách và an toàn!”</p>
+      <div class="start-grid">
+        <button class="big-btn btn-blue" onclick="startApp('explore')">
+          <span style="font-size:2rem">🔵</span>
+          <span>KHÁM PHÁ PHÒNG MÁY</span>
+        </button>
+        <button class="big-btn btn-green" onclick="startApp('posture')">
+          <span style="font-size:2rem">🟢</span>
+          <span>THỰC HÀNH TƯ THẾ NGỒI</span>
+        </button>
+        <button class="big-btn btn-orange" onclick="startApp('challenge')">
+          <span style="font-size:2rem">🟠</span>
+          <span>THỬ THÁCH</span>
+        </button>
       </div>
-      <span id="badge-health">Trạng thái: Cột sống thẳng (AN TOÀN)</span>
+      <button class="btn-vr-start" onclick="enterVRMode()">🥽 VÀO CHẾ ĐỘ VR (WebXR / 360°)</button>
     </div>
   </div>
 
-  <!-- KHÔNG GIAN THỰC TẾ ẢO A-FRAME WEBXR -->
-  <a-scene 
-    cursor="rayOrigin: mouse" 
-    posture-system 
-    background="color: #ECEFF1"
-    renderer="antialias: true; powerPreference: high-performance">
-    
-    <!-- CAMERA RIG (Góc nhìn ngang cạnh sườn để thấy rõ cột sống và cự ly mắt) -->
-    <a-entity id="camera-rig" position="1.1 1.25 -0.5" rotation="0 45 0">
-      <a-camera look-controls wasd-controls>
-        <a-cursor color="#FF9800" fuse="true" fuse-timeout="1200" raycaster="objects: .clickable"></a-cursor>
-      </a-camera>
-    </a-entity>
+  <!-- THANH ĐIỀU HƯỚNG & CÔNG CỤ TIẾP CẬN -->
+  <div id="top-bar">
+    <div class="nav-group">
+      <button class="tab-btn active" id="tab-explore" onclick="switchMode('explore')">🏠 Phòng máy</button>
+      <button class="tab-btn" id="tab-posture" onclick="switchMode('posture')">🪑 Tư thế ngồi</button>
+      <button class="tab-btn" id="tab-quiz" onclick="switchMode('quiz')">🎯 Game Tư thế</button>
+      <button class="tab-btn" id="tab-light" onclick="switchMode('light')">💡 Ánh sáng</button>
+      <button class="tab-btn" id="tab-eyes" onclick="switchMode('eyes')">👀 Đôi mắt</button>
+      <button class="tab-btn" id="tab-window" onclick="switchMode('window')">🌿 Nhìn ra xa</button>
+      <button class="tab-btn" id="tab-mouse" onclick="switchMode('mouse')">🖱 Chuột 3D</button>
+      <button class="tab-btn" id="tab-challenge" onclick="switchMode('challenge')">🎮 Thử thách</button>
+    </div>
+    <div class="util-group">
+      <button class="icon-btn" id="btn-sound" onclick="toggleSound()">🔊 Âm thanh: ON</button>
+      <button class="icon-btn" id="btn-gyro" onclick="toggleGyro()">📱 Cảm biến xoay</button>
+      <button class="icon-btn" onclick="changeFontSize(0.1)">A+</button>
+      <button class="icon-btn" onclick="changeFontSize(-0.1)">A-</button>
+      <button class="icon-btn" onclick="toggleAnimSpeed()" id="btn-speed">⚡ Tốc độ: 1x</button>
+      <button class="icon-btn" onclick="showHelpModal()">❓ Hướng dẫn</button>
+      <button class="icon-btn" onclick="goHomeModal()">🏡 Trang chủ</button>
+      <button class="icon-btn" id="btn-exit-vr" style="display:none;background:#c62828;" onclick="exitVRMode()">🚪 Thoát VR</button>
+    </div>
+  </div>
 
-    <!-- ÁNH SÁNG PHÒNG HỌC -->
-    <a-entity light="type: ambient; color: #FFFFFF; intensity: 0.9"></a-entity>
-    <a-entity light="type: directional; position: 2 4 1; intensity: 0.5"></a-entity>
+  <!-- ĐỒNG HỒ ĐẾM THỜI GIAN SỬ DỤNG MÁY TÍNH (KHU VỰC 5) -->
+  <div id="timer-widget">
+    <div id="timer-label">⏰ THỜI GIAN SỬ DỤNG</div>
+    <div id="timer-display">00:00</div>
+    <div>
+      <button class="mini-btn" id="btn-timer-start" onclick="toggleUsageTimer()">▶ BẮT ĐẦU</button>
+      <button class="mini-btn" style="background:#ef6c00" onclick="fastForward30Min()" title="Mô phỏng đạt mốc 30 phút">⏩ 30 phút</button>
+    </div>
+  </div>
 
-    <!-- SÀN PHÒNG HỌC & TƯỜNG -->
-    <a-plane position="0 0 -1.5" rotation="-90 0 0" width="10" height="10" color="#B0BEC5"></a-plane>
-    <a-plane position="0 2.5 -3.5" width="10" height="5" color="#ECEFF1"></a-plane>
+  <!-- TRỢ GIẢNG TIN HỌC (YÊU CẦU 15) -->
+  <div id="assistant-box">
+    <div class="avatar-circle" onclick="toggleAssistant()" title="Bật/Tắt lời hướng dẫn">👩‍🏫</div>
+    <div class="speech-bubble" id="assistant-bubble">
+      <div class="speech-name">
+        <span>Cô Trợ giảng Tin học</span>
+        <span style="cursor:pointer;color:#94a3b8" onclick="toggleAssistant()">✖</span>
+      </div>
+      <div id="assistant-text">Chào em! Hãy xoay 360° khám phá phòng máy hoặc chọn các mục phía trên để thực hành nhé!</div>
+    </div>
+  </div>
 
-    <!-- ================= BÀN MÁY TÍNH & MÀN HÌNH ================= -->
-    <a-box position="0 0.7 -1.5" width="1.6" height="0.05" depth="0.8" color="#5D4037"></a-box>
-    <a-cylinder position="-0.7 0.35 -1.2" radius="0.03" height="0.7" color="#3E2723"></a-cylinder>
-    <a-cylinder position="0.7 0.35 -1.2" radius="0.03" height="0.7" color="#3E2723"></a-cylinder>
+  <!-- TÂM NGẮM VR -->
+  <div id="vr-reticle"></div>
 
-    <!-- Màn hình máy tính (Ngang tầm mắt học sinh ~ 1.1m) -->
-    <a-box position="0 1.08 -1.5" width="0.75" height="0.48" depth="0.04" color="#212121">
-      <a-plane id="monitor-screen" position="0 0 0.022" width="0.7" height="0.44" color="#0288D1">
-        <a-entity text="value: KHOANG CACH AN TOAN\n50 - 80 CM; align: center; width: 1.6; color: #FFF" position="0 0 0.01"></a-entity>
-      </a-plane>
-    </a-box>
-    <a-cylinder position="0 0.77 -1.5" radius="0.025" height="0.1" color="#424242"></a-cylinder>
-    <a-box position="0 0.73 -1.5" width="0.25" height="0.02" depth="0.2" color="#303030"></a-box>
+  <!-- BẢNG TƯƠNG TÁC CHÍNH PHÍA DƯỚI -->
+  <div id="bottom-panel">
+    <div id="panel-title">KHÔNG GIAN PHÒNG TIN HỌC 360°</div>
+    <div id="feedback-banner">✨ Nhấp chuột vào các biểu tượng phát sáng trong phòng hoặc chọn bài học phía trên!</div>
+    <div id="interactive-controls"></div>
+  </div>
 
-    <!-- Bàn phím (Đặt ngang tầm khuỷu tay) -->
-    <a-box position="0 0.74 -1.25" width="0.46" height="0.015" depth="0.16" color="#37474F"></a-box>
+  <!-- MODAL NHẮC NHỞ NGHỈ NGƠI SAU 30 PHÚT (KHU VỰC 5) -->
+  <div class="overlay-modal" id="rest-modal">
+    <div class="modal-card">
+      <h2 style="font-size:1.8rem;margin:0 0 8px;color:#15803d;">🌿 ĐẾN GIỜ NGHỈ RỒI!</h2>
+      <p style="font-size:1.1rem;font-weight:600;margin-bottom:12px;">
+        Đã hết 30 phút làm việc với máy tính! Em hãy rời mắt khỏi màn hình, đứng dậy và thư giãn nhé.
+      </p>
+      <div id="rest-countdown" style="font-size:1.3rem;font-weight:900;color:#d97706;margin-bottom:10px;">
+        Thời gian vận động thư giãn: 20 giây
+      </div>
+      <div class="relax-grid">
+        <button class="relax-btn" onclick="doRelaxAction('window')">👀 Nhìn ra xa</button>
+        <button class="relax-btn" onclick="doRelaxAction('stretch')">🙆 Vươn vai</button>
+        <button class="relax-btn" onclick="doRelaxAction('walk')">🚶 Đi lại nhẹ nhàng</button>
+        <button class="relax-btn" onclick="doRelaxAction('water')">💧 Uống nước</button>
+      </div>
+      <p id="relax-status" style="font-weight:700;color:#0288d1;min-height:24px;">Hãy chọn một hoạt động thư giãn bên trên!</p>
+      <button class="big-btn btn-green" style="width:100%;margin-top:10px;" onclick="finishRest()">✓ EM ĐÃ NGHỈ XONG</button>
+    </div>
+  </div>
 
-    <!-- ĐỐM SÁNG BÀI TẬP THỂ DỤC MẮT (CHUYỂN ĐỘNG TRÊN MÀN HÌNH) -->
-    <a-sphere id="eye-target" visible="false" position="0 1.1 -1.48" radius="0.025" color="#FFD600"></a-sphere>
+  <!-- MODAL HƯỚNG DẪN SỬ DỤNG -->
+  <div class="overlay-modal" id="help-modal">
+    <div class="modal-card" style="background:#fff;border-color:#0288d1;color:#1e293b;">
+      <h2 style="color:#0277bd;margin-top:0;">📘 HƯỚNG DẪN SỬ DỤNG PHÒNG VR 360°</h2>
+      <ul style="text-align:left;line-height:1.7;font-weight:600;">
+        <li>🖱 <b>Trên máy tính:</b> Nhấn giữ và kéo chuột để xoay 360° quanh phòng. Dùng phím mũi tên hoặc WASD để xoay góc nhìn. Nhấp chuột vào các điểm Hotspot và nút bấm.</li>
+        <li>📱 <b>Trên điện thoại / máy tính bảng:</b> Chạm và vuốt màn hình để quan sát 360°, hoặc bấm nút <b>"📱 Cảm biến xoay"</b> để xoay điện thoại nhìn quanh phòng.</li>
+        <li>🥽 <b>Trên kính VR:</b> Nhấn nút <b>"🥽 VÀO CHẾ ĐỘ VR"</b>, hướng tâm ngắm vào các bảng chọn trong 1.5 giây để tự động kích hoạt.</li>
+      </ul>
+      <button class="ctrl-btn good" style="width:100%;padding:12px;font-size:1rem;" onclick="closeHelpModal()">ĐÃ HIỂU</button>
+    </div>
+  </div>
 
-    <!-- TIA THƯỚC ĐO KHOẢNG CÁCH TỪ MẮT TỚI MÀN HÌNH (LASER DISTANCE) -->
-    <a-cylinder id="laser-distance" position="0 1.12 -1.18" rotation="90 0 0" radius="0.004" height="0.65" color="#00E676"></a-cylinder>
+  <!-- KHÔNG GIAN 3D THREE.JS -->
+  <div id="canvas-container"></div>
 
-    <!-- ================= GHẾ VÀ HỌC SINH MÔ PHỎNG (AVATAR) ================= -->
-    <a-entity id="avatar-student" position="0 0 -0.85">
-      
-      <!-- GHẾ NGỒI HỌC SINH -->
-      <a-box position="0 0.45 0" width="0.45" height="0.05" depth="0.45" color="#1E88E5"></a-box>
-      <a-cylinder position="0 0.22 0" radius="0.04" height="0.45" color="#424242"></a-cylinder>
-      <a-cylinder position="-0.18 0.02 -0.18" radius="0.02" height="0.04" color="#212121"></a-cylinder>
-      <a-cylinder position="0.18 0.02 -0.18" radius="0.02" height="0.04" color="#212121"></a-cylinder>
-      <a-cylinder position="-0.18 0.02 0.18" radius="0.02" height="0.04" color="#212121"></a-cylinder>
-      <a-cylinder position="0.18 0.02 0.18" radius="0.02" height="0.04" color="#212121"></a-cylinder>
-      <!-- Tựa lưng ghế -->
-      <a-box position="0 0.75 0.2" width="0.42" height="0.55" depth="0.04" color="#1565C0"></a-box>
+  <script>
+    /*************************************************************************
+     * 1. HỆ THỐNG ÂM THANH WEB AUDIO API (KHÔNG CẦN FILE MP3 BÊN NGOÀI)
+     *************************************************************************/
+    class EduAudio {
+      constructor() {
+        this.enabled = true;
+        this.ctx = null;
+      }
+      init() {
+        if (!this.ctx) {
+          const AudioCtx = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioCtx();
+        }
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      }
+      playTone(freq, duration = 0.12, type = 'sine', delay = 0) {
+        if (!this.enabled) return;
+        this.init();
+        setTimeout(() => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.005, this.ctx.currentTime + duration);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + duration);
+        }, delay);
+      }
+      click() { this.playTone(700, 0.05, 'sine'); }
+      switchLight() { this.playTone(450, 0.06, 'triangle'); }
+      correct() {
+        this.playTone(523.25, 0.12, 'triangle', 0);
+        this.playTone(659.25, 0.12, 'triangle', 110);
+        this.playTone(783.99, 0.22, 'triangle', 220);
+      }
+      wrong() {
+        this.playTone(300, 0.15, 'sawtooth', 0);
+        this.playTone(240, 0.22, 'sawtooth', 140);
+      }
+      fanfare() {
+        [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.playTone(f, 0.2, 'triangle', i * 130));
+      }
+      alarmRest() {
+        [440, 554.37, 659.25, 554.37, 440].forEach((f, i) => this.playTone(f, 0.18, 'sine', i * 160));
+      }
+    }
+    const sfx = new EduAudio();
 
-      <!-- HAI CHÂN HỌC SINH ĐỂ VUÔNG GÓC TRÊN MẶT SÀN -->
-      <a-box position="-0.12 0.25 -0.12" width="0.08" height="0.45" depth="0.08" color="#37474F"></a-box>
-      <a-box position="0.12 0.25 -0.12" width="0.08" height="0.45" depth="0.08" color="#37474F"></a-box>
-      <a-box position="-0.12 0.02 -0.2" width="0.1" height="0.04" depth="0.16" color="#263238"></a-box>
-      <a-box position="0.12 0.02 -0.2" width="0.1" height="0.04" depth="0.16" color="#263238"></a-box>
+    /*************************************************************************
+     * 2. BIẾN TRẠNG THÁI TOÀN CỤC & LƯU TRỮ LOCALSTORAGE
+     *************************************************************************/
+    const state = {
+      mode: 'explore',
+      animSpeed: 1,
+      assistantVisible: true,
+      vrActive: false,
+      gyroActive: false,
+      distanceCm: 65,
+      postureType: 'good', // good, A, B, C, D
+      ceilingLightOn: true,
+      windowBlindsOpen: true,
+      directGlare: false,
+      dimRoom: false,
+      timerSeconds: 0,
+      timerRunning: false,
+      restCountdown: 20,
+      quizScore: 0,
+      quizIndex: 0,
+      mouseGameScore: 0,
+      mouseTargetPart: 'left',
+      badges: JSON.parse(localStorage.getItem('bai4_vr_badges')) || {
+        posture: false,
+        distance: false,
+        lighting: false,
+        lightSwitch: false,
+        rest: false,
+        mouse: false
+      }
+    };
 
-      <!-- KHỐI CỘT SỐNG & LƯNG (CÓ KHẢ NĂNG BẺ CONG GÙ HOẶC THẲNG ĐỨNG) -->
-      <a-entity id="avatar-spine" position="0 0.48 0">
-        <!-- Thân người -->
-        <a-box position="0 0.25 0" width="0.32" height="0.5" depth="0.2" color="#FF9800"></a-box>
+    function saveBadges() {
+      localStorage.setItem('bai4_vr_badges', JSON.stringify(state.badges));
+    }
 
-        <!-- Cánh tay đặt ngang tầm bàn phím -->
-        <a-box position="-0.2 0.35 -0.15" rotation="20 0 0" width="0.06" height="0.35" depth="0.06" color="#FFA726"></a-box>
-        <a-box position="0.2 0.35 -0.15" rotation="20 0 0" width="0.06" height="0.35" depth="0.06" color="#FFA726"></a-box>
+    /*************************************************************************
+     * 3. KHỞI TẠO KHÔNG GIAN 3D THREE.JS & PHÒNG HỌC TIN HỌC VIỆT NAM
+     *************************************************************************/
+    const container = document.getElementById('canvas-container');
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87CEEB);
 
-        <!-- ĐẦU VÀ MẮT HƯỚNG THẲNG -->
-        <a-entity id="avatar-head" position="0 0.58 0">
-          <a-sphere radius="0.12" color="#FFCC80"></a-sphere>
-          <!-- Mắt (Hướng ngang tầm màn hình) -->
-          <a-sphere position="-0.04 0.02 -0.11" radius="0.02" color="#212121"></a-sphere>
-          <a-sphere position="0.04 0.02 -0.11" radius="0.02" color="#212121"></a-sphere>
-        </a-entity>
-      </a-entity>
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
+    camera.position.set(0, 1.65, 2.3);
 
-    </a-entity>
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.xr.enabled = true;
+    container.appendChild(renderer.domElement);
 
-  </a-scene>
+    // Góc nhìn 360° bằng Chuột / Cảm ứng / Bàn phím
+    let lon = -90, lat = -8;
+    let isPointerDown = false, startX = 0, startY = 0, startLon = 0, startLat = 0;
+    let cameraTargetPos = new THREE.Vector3(0, 1.65, 2.3);
+    let cameraLookOverride = null; // Dùng khi chuyển camera đến gần chuột 3D hoặc cửa sổ
+
+    // Ánh sáng trong phòng học
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
+    scene.add(ambientLight);
+
+    const ceilingPointLight = new THREE.PointLight(0xfff8e1, 0.85, 18);
+    ceilingPointLight.position.set(0, 3.6, 0);
+    scene.add(ceilingPointLight);
+
+    const sunDirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    sunDirLight.position.set(-6, 4, -2);
+    scene.add(sunDirLight);
+
+    // Nhóm đối tượng tương tác Raycaster
+    const interactables = [];
+    const hotspotSprites = [];
+    const vrMenuButtons = [];
+
+    // Hàm tiện ích tạo nhãn chữ Tiếng Việt chuẩn sắc nét bằng Canvas 2D
+    function createTextSprite(text, bgColor = '#0288d1', textColor = '#ffffff', width = 320, height = 80, fontSize = 28) {
+      const canvas = document.createElement('canvas');
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = bgColor;
+      ctx.beginPath();
+      ctx.roundRect(4, 4, width - 8, height - 8, 18);
+      ctx.fill();
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#ffffff';
+      ctx.stroke();
+
+      ctx.fillStyle = textColor;
+      ctx.font = `bold ${fontSize}px "Segoe UI", Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, width / 2, height / 2);
+
+      const texture = new THREE.CanvasTexture(canvas);
+      const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
+      const sprite = new THREE.Sprite(material);
+      sprite.scale.set(width / 260, height / 260, 1);
+      return sprite;
+    }
+
+    // XÂY DỰNG KIẾN TRÚC PHÒNG HỌC TIN HỌC
+    const roomGroup = new THREE.Group();
+    scene.add(roomGroup);
+
+    // Sàn gạch sáng & Tường lớp học
+    const floorMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0 });
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 10), floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    roomGroup.add(floor);
+
+    const wallMat = new THREE.MeshLambertMaterial({ color: 0xfef9c3 });
+    const backWall = new THREE.Mesh(new THREE.PlaneGeometry(12, 4.2), wallMat);
+    backWall.position.set(0, 2.1, -4.5);
+    roomGroup.add(backWall);
+
+    const frontWall = new THREE.Mesh(new THREE.PlaneGeometry(12, 4.2), wallMat);
+    frontWall.position.set(0, 2.1, 4.5);
+    frontWall.rotation.y = Math.PI;
+    roomGroup.add(frontWall);
+
+    const rightWall = new THREE.Mesh(new THREE.PlaneGeometry(9, 4.2), wallMat);
+    rightWall.position.set(6, 2.1, 0);
+    rightWall.rotation.y = -Math.PI / 2;
+    roomGroup.add(rightWall);
+
+    // Tường trái có khung cửa sổ nhìn ra sân trường
+    const leftWallTop = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.0, 9), wallMat);
+    leftWallTop.position.set(-6, 3.7, 0);
+    roomGroup.add(leftWallTop);
+    const leftWallBot = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.1, 9), wallMat);
+    leftWallBot.position.set(-6, 0.55, 0);
+    roomGroup.add(leftWallBot);
+
+    // Rèm cửa sổ (Đóng/Mở trong Khu vực Ánh sáng)
+    const blindMat = new THREE.MeshLambertMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.85 });
+    const windowBlind = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.1, 4.2), blindMat);
+    windowBlind.position.set(-5.9, 2.15, -0.5);
+    windowBlind.visible = false; // Mặc định mở rèm đón ánh sáng tự nhiên
+    roomGroup.add(windowBlind);
+
+    // Trần nhà và Đèn trần phát sáng
+    const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(12, 9), new THREE.MeshBasicMaterial({ color: 0xf8fafc }));
+    ceiling.position.set(0, 4.2, 0);
+    ceiling.rotation.x = Math.PI / 2;
+    roomGroup.add(ceiling);
+
+    const lampBulbMat = new THREE.MeshBasicMaterial({ color: 0xfffbeb });
+    const ceilingLamp = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.08, 24), lampBulbMat);
+    ceilingLamp.position.set(0, 4.14, 0);
+    roomGroup.add(ceilingLamp);
+
+    // Bảng lớp học xanh ("BÀI 4: LÀM VIỆC VỚI MÁY TÍNH")
+    const boardGroup = new THREE.Group();
+    const greenBoard = new THREE.Mesh(new THREE.BoxGeometry(4.4, 1.5, 0.08), new THREE.MeshLambertMaterial({ color: 0x14532d }));
+    boardGroup.add(greenBoard);
+    const boardTitle = createTextSprite('BÀI 4: LÀM VIỆC VỚI MÁY TÍNH', '#14532d', '#fef08a', 600, 90, 32);
+    boardTitle.position.set(0, 0.25, 0.08);
+    boardGroup.add(boardTitle);
+    const boardSub = createTextSprite('Ngồi đúng tư thế - Giữ khoảng cách 50-80 cm - Bảo vệ mắt', '#14532d', '#ffffff', 640, 75, 22);
+    boardSub.position.set(0, -0.25, 0.08);
+    boardGroup.add(boardSub);
+    boardGroup.position.set(0, 2.4, -4.42);
+    roomGroup.add(boardGroup);
+
+    // Đồng hồ treo tường
+    const clockGroup = new THREE.Group();
+    const clockFace = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.05, 24), new THREE.MeshLambertMaterial({ color: 0xffffff }));
+    clockFace.rotation.x = Math.PI / 2;
+    clockGroup.add(clockFace);
+    const clockHand1 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.22, 0.02), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+    clockHand1.position.set(0, 0.08, 0.04);
+    clockGroup.add(clockHand1);
+    clockGroup.position.set(3.2, 3.1, -4.42);
+    roomGroup.add(clockGroup);
+
+    // Giá sách và Cây xanh góc phòng
+    const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.2, 0.45), new THREE.MeshLambertMaterial({ color: 0x8d6e63 }));
+    shelf.position.set(4.8, 1.1, -3.9);
+    roomGroup.add(shelf);
+
+    function createPlant(x, z) {
+      const pGroup = new THREE.Group();
+      const pot = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.18, 0.4, 16), new THREE.MeshLambertMaterial({ color: 0xd97706 }));
+      pot.position.y = 0.2;
+      const leaves = new THREE.Mesh(new THREE.SphereGeometry(0.42, 16, 16), new THREE.MeshLambertMaterial({ color: 0x22c55e }));
+      leaves.position.y = 0.65;
+      pGroup.add(pot, leaves);
+      pGroup.position.set(x, 0, z);
+      roomGroup.add(pGroup);
+    }
+    createPlant(-4.8, -3.8);
+    createPlant(4.8, 2.8);
+
+    // KHUNG CẢNH BÊN NGOÀI CỬA SỔ (BẦU TRỜI, MÂY, CHIM BAY, CÂY XANH, SÂN TRƯỜNG)
+    const outdoorGroup = new THREE.Group();
+    scene.add(outdoorGroup);
+    const schoolYard = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshLambertMaterial({ color: 0x86efac }));
+    schoolYard.rotation.x = -Math.PI / 2;
+    schoolYard.position.set(-18, -0.1, 0);
+    outdoorGroup.add(schoolYard);
+
+    for (let i = 0; i < 4; i++) {
+      const tree = new THREE.Group();
+      const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.35, 2.2, 12), new THREE.MeshLambertMaterial({ color: 0x78350f }));
+      trunk.position.y = 1.1;
+      const crown = new THREE.Mesh(new THREE.SphereGeometry(1.3, 16, 16), new THREE.MeshLambertMaterial({ color: 0x16a34a }));
+      crown.position.y = 2.8;
+      tree.add(trunk, crown);
+      tree.position.set(-11 - (i % 2) * 3, 0, -4 + i * 2.8);
+      outdoorGroup.add(tree);
+    }
+
+    const clouds = [];
+    for (let i = 0; i < 3; i++) {
+      const cloud = new THREE.Mesh(new THREE.SphereGeometry(0.8, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+      cloud.scale.set(2.2, 0.8, 1.2);
+      cloud.position.set(-14, 4.5 + (i % 2) * 0.6, -5 + i * 4);
+      outdoorGroup.add(cloud);
+      clouds.push(cloud);
+    }
+
+    const birds = [];
+    for (let i = 0; i < 3; i++) {
+      const bird = new THREE.Mesh(new THREE.ConeGeometry(0.18, 0.45, 4), new THREE.MeshBasicMaterial({ color: 0x1e293b }));
+      bird.rotation.z = Math.PI / 2;
+      bird.position.set(-10, 3.2 + i * 0.4, -3 + i * 2);
+      outdoorGroup.add(bird);
+      birds.push(bird);
+    }
+
+    /*************************************************************************
+     * 4. BÀN HỌC SINH, MÁY TÍNH & MÔ HÌNH HỌC SINH TIỂU HỌC VIỆT NAM (KHU VỰC 1 & 2)
+     *************************************************************************/
+    const mainDeskGroup = new THREE.Group();
+    scene.add(mainDeskGroup);
+
+    // Mặt bàn và chân bàn
+    const deskTop = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.06, 0.85), new THREE.MeshLambertMaterial({ color: 0xd97706 }));
+    deskTop.position.set(0, 0.75, -0.7);
+    mainDeskGroup.add(deskTop);
+
+    [[-0.75, -1.0], [0.75, -1.0], [-0.75, -0.4], [0.75, -0.4]].forEach(([x, z]) => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.75, 12), new THREE.MeshLambertMaterial({ color: 0x475569 }));
+      leg.position.set(x, 0.375, z);
+      mainDeskGroup.add(leg);
+    });
+
+    // Thùng máy (Case), Màn hình, Bàn phím, Chuột trên bàn
+    const pcCase = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.48, 0.45), new THREE.MeshLambertMaterial({ color: 0x334155 }));
+    pcCase.position.set(-0.58, 1.02, -0.72);
+    mainDeskGroup.add(pcCase);
+
+    const monitorGroup = new THREE.Group();
+    const monitorFrame = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.48, 0.04), new THREE.MeshLambertMaterial({ color: 0x1e293b }));
+    const screenMat = new THREE.MeshBasicMaterial({ color: 0x0288d1 });
+    const monitorScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.42), screenMat);
+    monitorScreen.position.z = 0.022;
+
+    // Vệt lóa sáng phản chiếu khi ánh sáng chiếu trực tiếp vào màn hình (Khu vực 8)
+    const glareMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.0 });
+    const screenGlare = new THREE.Mesh(new THREE.CircleGeometry(0.22, 24), glareMat);
+    screenGlare.position.set(-0.1, 0.05, 0.025);
+
+    const monitorStand = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, 0.16, 12), new THREE.MeshLambertMaterial({ color: 0x475569 }));
+    monitorStand.position.y = -0.3;
+    monitorGroup.add(monitorFrame, monitorScreen, screenGlare, monitorStand);
+    monitorGroup.position.set(0, 1.12, -0.88);
+    mainDeskGroup.add(monitorGroup);
+
+    const keyboard = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.02, 0.16), new THREE.MeshLambertMaterial({ color: 0x1e293b }));
+    keyboard.position.set(0, 0.79, -0.52);
+    mainDeskGroup.add(keyboard);
+
+    const smallMouse = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.03, 0.12), new THREE.MeshLambertMaterial({ color: 0x0288d1 }));
+    smallMouse.position.set(0.35, 0.79, -0.52);
+    mainDeskGroup.add(smallMouse);
+
+    // HÀM TẠO NHÂN VẬT HỌC SINH TIỂU HỌC VIỆT NAM (CÓ KHỚP CỘT SỐNG, ĐẦU, TAY, CHÂN)
+    function createStudentRig() {
+      const root = new THREE.Group();
+
+      // Ghế ngồi
+      const seat = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.05, 0.44), new THREE.MeshLambertMaterial({ color: 0x0288d1 }));
+      seat.position.set(0, 0.45, 0);
+      const backRest = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.5, 0.05), new THREE.MeshLambertMaterial({ color: 0x0288d1 }));
+      backRest.position.set(0, 0.72, 0.2);
+      const chairLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.45, 12), new THREE.MeshLambertMaterial({ color: 0x475569 }));
+      chairLeg.position.set(0, 0.225, 0);
+      root.add(seat, backRest, chairLeg);
+
+      // Nhóm cơ thể học sinh (để có thể đứng dậy khi nghỉ ngơi)
+      const bodyGroup = new THREE.Group();
+      root.add(bodyGroup);
+
+      // Chân trái & phải
+      const legMat = new THREE.MeshLambertMaterial({ color: 0x1e3a8a });
+      const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.44, 0.11), legMat);
+      leftLeg.position.set(-0.11, 0.24, -0.14);
+      const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.44, 0.11), legMat);
+      rightLeg.position.set(0.11, 0.24, -0.14);
+      bodyGroup.add(leftLeg, rightLeg);
+
+      // Khớp cột sống & thân áo trắng đồng phục + khăn quàng đỏ
+      const spinePivot = new THREE.Group();
+      spinePivot.position.set(0, 0.48, 0);
+      bodyGroup.add(spinePivot);
+
+      const torsoMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.48, 0.2), torsoMat);
+      torso.position.set(0, 0.24, 0);
+      spinePivot.add(torso);
+
+      // Khăn quàng đỏ Đội viên Việt Nam
+      const scarf = new THREE.Mesh(new THREE.ConeGeometry(0.19, 0.22, 4), new THREE.MeshLambertMaterial({ color: 0xdc2626 }));
+      scarf.rotation.x = Math.PI;
+      scarf.position.set(0, 0.42, -0.06);
+      spinePivot.add(scarf);
+
+      // Hai cánh tay
+      const armMat = new THREE.MeshLambertMaterial({ color: 0xfde047 });
+      const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.36, 0.08), armMat);
+      leftArm.position.set(-0.22, 0.32, -0.12);
+      leftArm.rotation.x = 0.55;
+      const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.36, 0.08), armMat);
+      rightArm.position.set(0.22, 0.32, -0.12);
+      rightArm.rotation.x = 0.55;
+      spinePivot.add(leftArm, rightArm);
+
+      // Đầu, Tóc và Đôi mắt
+      const headPivot = new THREE.Group();
+      headPivot.position.set(0, 0.58, 0);
+      spinePivot.add(headPivot);
+
+      const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.14, 20, 20), new THREE.MeshLambertMaterial({ color: 0xfed7aa }));
+      const hairMesh = new THREE.Mesh(new THREE.SphereGeometry(0.148, 20, 12, 0, Math.PI * 2, 0, Math.PI / 1.8), new THREE.MeshLambertMaterial({ color: 0x1e293b }));
+      hairMesh.position.y = 0.02;
+      const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 8), new THREE.MeshBasicMaterial({ color: 0x0f172a }));
+      eyeL.position.set(-0.045, 0.02, -0.13);
+      const eyeR = eyeL.clone();
+      eyeR.position.x = 0.045;
+      headPivot.add(headMesh, hairMesh, eyeL, eyeR);
+
+      return { root, bodyGroup, spinePivot, headPivot, leftLeg, rightLeg, leftArm, rightArm, torso };
+    }
+
+    const mainStudent = createStudentRig();
+    mainStudent.root.position.set(0, 0, -0.23);
+    scene.add(mainStudent.root);
+
+    // Thước đo tia Laser từ mắt học sinh đến màn hình & Nhãn khoảng cách (Khu vực 1 & 4)
+    const rulerGroup = new THREE.Group();
+    const rulerMat = new THREE.MeshBasicMaterial({ color: 0x00e676 });
+    const rulerBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.65, 12), rulerMat);
+    rulerBeam.rotation.x = Math.PI / 2;
+    rulerGroup.add(rulerBeam);
+    let rulerLabel = createTextSprite('65 cm (An toàn)', '#16a34a', '#ffffff', 280, 70, 26);
+    rulerLabel.position.set(0, 0.16, 0);
+    rulerGroup.add(rulerLabel);
+    rulerGroup.position.set(0, 1.08, -0.55);
+    scene.add(rulerGroup);
+
+    /*************************************************************************
+     * 5. KHU VỰC 6: CON CHUỘT MÁY TÍNH 3D LỚN (TRÊN BÀN PHỤ BÊN PHẢI)
+     *************************************************************************/
+    const giantMouseGroup = new THREE.Group();
+    giantMouseGroup.position.set(2.4, 0.78, -0.7);
+    scene.add(giantMouseGroup);
+
+    const mouseDesk = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.06, 1.0), new THREE.MeshLambertMaterial({ color: 0x0288d1 }));
+    mouseDesk.position.y = -0.03;
+    giantMouseGroup.add(mouseDesk);
+
+    const mouseBody = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.18, 0.82), new THREE.MeshLambertMaterial({ color: 0x475569 }));
+    mouseBody.position.y = 0.09;
+    giantMouseGroup.add(mouseBody);
+
+    // Nút trái chuột
+    const leftBtnMat = new THREE.MeshLambertMaterial({ color: 0x38bdf8 });
+    const mouseLeftBtn = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.06, 0.36), leftBtnMat);
+    mouseLeftBtn.position.set(-0.14, 0.20, -0.20);
+    mouseLeftBtn.userData = { type: 'mousePart', part: 'left', name: 'Nút trái chuột', desc: 'Dùng để chọn đối tượng, nháy chuột và thực hiện một số thao tác.' };
+    giantMouseGroup.add(mouseLeftBtn);
+    interactables.push(mouseLeftBtn);
+
+    // Nút phải chuột
+    const rightBtnMat = new THREE.MeshLambertMaterial({ color: 0xfbbf24 });
+    const mouseRightBtn = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.06, 0.36), rightBtnMat);
+    mouseRightBtn.position.set(0.14, 0.20, -0.20);
+    mouseRightBtn.userData = { type: 'mousePart', part: 'right', name: 'Nút phải chuột', desc: 'Dùng để mở một số thực đơn lệnh.' };
+    giantMouseGroup.add(mouseRightBtn);
+    interactables.push(mouseRightBtn);
+
+    // Nút cuộn chuột
+    const scrollMat = new THREE.MeshLambertMaterial({ color: 0xf43f5e });
+    const mouseScrollBtn = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.05, 16), scrollMat);
+    mouseScrollBtn.rotation.z = Math.PI / 2;
+    mouseScrollBtn.position.set(0, 0.23, -0.20);
+    mouseScrollBtn.userData = { type: 'mousePart', part: 'scroll', name: 'Nút cuộn chuột', desc: 'Dùng để cuộn trang lên hoặc xuống.' };
+    giantMouseGroup.add(mouseScrollBtn);
+    interactables.push(mouseScrollBtn);
+
+    const mouseTitleSprite = createTextSprite('🖱 MÔ HÌNH CHUỘT 3D', '#0f172a', '#38bdf8', 340, 70, 24);
+    mouseTitleSprite.position.set(0, 0.65, 0);
+    giantMouseGroup.add(mouseTitleSprite);
+
+    /*************************************************************************
+     * 6. BẢNG KIẾN THỨC HOTSPOTS (YÊU CẦU 16) & BẢN ĐỒ VR NỔI (YÊU CẦU 17)
+     *************************************************************************/
+    const hotspotData = [
+      { id: 'eyes', label: '👀 MẮT', pos: [0, 1.52, -0.85], msg: '👀 MẮT: Giữ khoảng cách phù hợp với màn hình (từ 50 đến 80 cm).' },
+      { id: 'posture', label: '🪑 TƯ THẾ', pos: [-0.65, 1.15, -0.2], msg: '🪑 TƯ THẾ: Ngồi ngay ngắn, lưng thẳng, vai thả lỏng, chân đặt ổn định.' },
+      { id: 'light', label: '💡 ÁNH SÁNG', pos: [0, 3.45, -0.5], msg: '💡 ÁNH SÁNG: Đảm bảo đủ ánh sáng và tránh ánh sáng chiếu trực tiếp vào màn hình.' },
+      { id: 'rest', label: '⏰ NGHỈ NGƠI', pos: [3.2, 2.5, -4.1], msg: '⏰ NGHỈ NGƠI: Sau một thời gian sử dụng máy tính (khoảng 30 phút), hãy nghỉ ngơi và thư giãn.' },
+      { id: 'mouse', label: '🖱 CHUỘT', pos: [2.4, 1.65, -0.7], msg: '🖱 CHUỘT: Nhận biết nút trái, nút phải và nút cuộn để điều khiển máy tính.' }
+    ];
+
+    hotspotData.forEach(h => {
+      const sp = createTextSprite(h.label, '#0288d1', '#ffffff', 250, 72, 26);
+      sp.position.set(...h.pos);
+      sp.userData = { type: 'hotspot', info: h.msg, targetId: h.id };
+      scene.add(sp);
+      hotspotSprites.push(sp);
+      interactables.push(sp);
+    });
+
+    // BẢN ĐỒ PHÒNG VR NỔI TRONG KHÔNG GIAN 3D (YÊU CẦU 17)
+    const vrSpatialMenu = new THREE.Group();
+    vrSpatialMenu.position.set(-1.6, 1.65, -1.2);
+    vrSpatialMenu.rotation.y = 0.45;
+    scene.add(vrSpatialMenu);
+
+    const vrNavItems = [
+      { mode: 'explore', title: '🏠 Phòng máy' },
+      { mode: 'posture', title: '🪑 Tư thế ngồi' },
+      { mode: 'light', title: '💡 Ánh sáng' },
+      { mode: 'eyes', title: '👀 Bảo vệ mắt' },
+      { mode: 'window', title: '⏰ Nghỉ ngơi' },
+      { mode: 'mouse', title: '🖱 Chuột máy tính' },
+      { mode: 'challenge', title: '🎮 Thử thách' }
+    ];
+
+    vrNavItems.forEach((item, idx) => {
+      const btnSp = createTextSprite(item.title, '#1e293b', '#ffca28', 290, 64, 24);
+      btnSp.position.set(0, 0.75 - idx * 0.25, 0);
+      btnSp.userData = { type: 'vrNav', targetMode: item.mode };
+      vrSpatialMenu.add(btnSp);
+      vrMenuButtons.push(btnSp);
+      interactables.push(btnSp);
+    });
+
+    /*************************************************************************
+     * 7. XỬ LÝ TƯ THẾ NGỒI ĐÚNG / SAI & KHOẢNG CÁCH (KHU VỰC 1, 2, 4)
+     *************************************************************************/
+    function applyStudentPosture(type) {
+      state.postureType = type;
+      const s = mainStudent;
+      // Reset mặc định
+      s.bodyGroup.position.set(0, 0, 0);
+      s.spinePivot.rotation.set(0, 0, 0);
+      s.headPivot.rotation.set(0, 0, 0);
+      s.leftLeg.rotation.set(0, 0, 0);
+      s.rightLeg.rotation.set(0, 0, 0);
+      s.torso.material.color.setHex(0xffffff);
+
+      if (type === 'good') {
+        setDistanceCm(65);
+        s.torso.material.color.setHex(0xdcfce7);
+        sfx.correct();
+        state.badges.posture = true;
+        saveBadges();
+        setFeedback('✓ TƯ THẾ ĐÚNG: Ngồi thẳng lưng, vai thả lỏng, mắt ngang màn hình (50–80 cm), chân đặt ổn định.', '#4ade80');
+        sayAssistant('Giỏi lắm! Ngồi thẳng lưng và giữ khoảng cách 50–80 cm giúp bảo vệ cột sống và đôi mắt của em.');
+      } else if (type === 'A') {
+        // Tình huống A: Cúi sát màn hình
+        setDistanceCm(30);
+        s.spinePivot.rotation.x = 0.45;
+        s.torso.material.color.setHex(0xfee2e2);
+        sfx.wrong();
+        setFeedback('✗ Sai (Tình huống A): Em ngồi quá gần màn hình.', '#f87171');
+        sayAssistant('Cúi sát mặt vào màn hình sẽ làm mắt nhanh mỏi và dễ bị cận thị đấy em nhé!');
+      } else if (type === 'B') {
+        // Tình huống B: Ngồi cong lưng
+        s.spinePivot.rotation.x = 0.65;
+        s.headPivot.rotation.x = -0.35;
+        s.torso.material.color.setHex(0xfee2e2);
+        sfx.wrong();
+        setFeedback('✗ Sai (Tình huống B): Em cần giữ lưng thẳng và vai thả lỏng.', '#f87171');
+        sayAssistant('Ngồi cong lưng lâu ngày sẽ gây đau mỏi lưng và ảnh hưởng xấu đến cột sống.');
+      } else if (type === 'C') {
+        // Tình huống C: Ngồi lệch người
+        s.spinePivot.rotation.z = 0.42;
+        s.headPivot.rotation.z = -0.2;
+        s.torso.material.color.setHex(0xfee2e2);
+        sfx.wrong();
+        setFeedback('✗ Sai (Tình huống C): Em cần ngồi ngay ngắn trước máy tính.', '#f87171');
+        sayAssistant('Em hãy ngồi ngay ngắn chính diện với màn hình, không nghiêng vẹo người nhé!');
+      } else if (type === 'D') {
+        // Tình huống D: Chân không đặt ổn định
+        s.leftLeg.rotation.x = -0.85;
+        s.rightLeg.rotation.x = 0.65;
+        s.torso.material.color.setHex(0xfee2e2);
+        sfx.wrong();
+        setFeedback('✗ Sai (Tình huống D): Em cần đặt chân ở tư thế thoải mái và ổn định.', '#f87171');
+        sayAssistant('Hai bàn chân cần đặt ổn định trên mặt sàn để cơ thể giữ thăng bằng tốt nhất.');
+      }
+    }
+
+    function setDistanceCm(cm) {
+      state.distanceCm = Number(cm);
+      const zOffset = -0.88 + (state.distanceCm / 100);
+      mainStudent.root.position.z = zOffset;
+
+      // Cập nhật thước đo 3D
+      const len = state.distanceCm / 100;
+      rulerBeam.scale.set(1, len / 0.65, 1);
+      rulerGroup.position.z = -0.88 + len / 2;
+
+      rulerGroup.remove(rulerLabel);
+      let statusTxt = '';
+      let badgeColor = '#16a34a';
+
+      if (state.distanceCm >= 50 && state.distanceCm <= 80) {
+        statusTxt = `Khoảng cách: ${state.distanceCm} cm — ✓ Rất tốt!`;
+        rulerMat.color.setHex(0x00e676);
+        badgeColor = '#16a34a';
+        state.badges.distance = true;
+        saveBadges();
+        if (state.mode === 'eyes') {
+          setFeedback(`✓ Tuyệt vời! Khoảng cách phù hợp là 50–80 cm (Hiện tại: ${state.distanceCm} cm).`, '#4ade80');
+        } else {
+          setFeedback(statusTxt, '#4ade80');
+        }
+      } else if (state.distanceCm < 50) {
+        statusTxt = `Khoảng cách: ${state.distanceCm} cm — ⚠ Em đang ngồi quá gần màn hình.`;
+        rulerMat.color.setHex(0xef4444);
+        badgeColor = '#dc2626';
+        setFeedback(statusTxt, '#f87171');
+      } else {
+        statusTxt = `Khoảng cách: ${state.distanceCm} cm — ⚠ Em đang ngồi quá xa màn hình.`;
+        rulerMat.color.setHex(0xf59e0b);
+        badgeColor = '#d97706';
+        setFeedback(statusTxt, '#fbbf24');
+      }
+
+      rulerLabel = createTextSprite(`${state.distanceCm} cm`, badgeColor, '#ffffff', 220, 65, 26);
+      rulerLabel.position.set(0, 0.16, 0);
+      rulerGroup.add(rulerLabel);
+
+      const sliderEl = document.getElementById('dist-slider');
+      if (sliderEl) sliderEl.value = state.distanceCm;
+    }
+
+    /*************************************************************************
+     * 8. TRÒ CHƠI “TƯ THẾ NÀO ĐÚNG?” (YÊU CẦU 6 - 5 CÂU HỎI)
+     *************************************************************************/
+    const quizQuestions = [
+      { q: 'Câu 1/5: Theo em, bạn nào đang ngồi đúng tư thế?', options: ['Bạn A: Cúi sát mặt 25cm', 'Bạn B: Lưng thẳng, mắt cách 65cm', 'Bạn C: Ngồi cong gù lưng', 'Bạn D: Co chân lên ghế'], ans: 1, poses: ['A', 'good', 'B', 'D'] },
+      { q: 'Câu 2/5: Khoảng cách từ mắt đến màn hình bao nhiêu là đúng chuẩn?', options: ['Bạn A: Ngồi thẳng, cách 60cm', 'Bạn B: Ngồi sát màn hình 30cm', 'Bạn C: Ngồi nghiêng vẹo người', 'Bạn D: Ngồi quá xa 110cm'], ans: 0, poses: ['good', 'A', 'C', 'D'] },
+      { q: 'Câu 3/5: Tư thế lưng và vai như thế nào giúp bảo vệ cột sống?', options: ['Bạn A: Gù lưng về trước', 'Bạn B: Vẹo vai sang một bên', 'Bạn C: Lưng thẳng, vai thả lỏng tự nhiên', 'Bạn D: Cúi gằm mặt'], ans: 2, poses: ['B', 'C', 'good', 'A'] },
+      { q: 'Câu 4/5: Khi ngồi làm việc với máy tính, em đặt chân thế nào?', options: ['Bạn A: Gác chân lên bàn', 'Bạn B: Co quắp chân', 'Bạn C: Đu đưa chân liên tục', 'Bạn D: Đặt hai chân ổn định, thoải mái trên sàn'], ans: 3, poses: ['D', 'B', 'C', 'good'] },
+      { q: 'Câu 5/5: Hãy chọn bạn nhỏ thực hiện đúng quy tắc an toàn!', options: ['Bạn A: Ngồi ngay ngắn, lưng thẳng, cách 65cm', 'Bạn B: Ngồi lệch vẹo cột sống', 'Bạn C: Dí sát mắt vào màn hình', 'Bạn D: Ngồi cong lưng tôm'], ans: 0, poses: ['good', 'C', 'A', 'B'] }
+    ];
+
+    function renderQuizUI() {
+      const qData = quizQuestions[state.quizIndex];
+      document.getElementById('panel-title').innerText = `🎯 TRÒ CHƠI: TƯ THẾ NÀO ĐÚNG? (Điểm: ${state.quizScore}/5)`;
+      setFeedback(qData.q, '#fef08a');
+      const ctrl = document.getElementById('interactive-controls');
+      ctrl.innerHTML = qData.options.map((opt, idx) =>
+        `<button class="ctrl-btn" onclick="answerQuiz(${idx})">${opt}</button>`
+      ).join('');
+    }
+
+    window.answerQuiz = function(choiceIdx) {
+      const qData = quizQuestions[state.quizIndex];
+      const chosenPose = qData.poses[choiceIdx];
+      applyStudentPosture(chosenPose);
+
+      if (choiceIdx === qData.ans) {
+        state.quizScore++;
+        sfx.correct();
+        setFeedback(`🎉 Chính xác! Bạn đã ngồi đúng tư thế. (Điểm: ${state.quizScore}/5)`, '#4ade80');
+      } else {
+        sfx.wrong();
+        setFeedback(`✗ Chưa đúng rồi! Hãy quan sát lại lưng, mắt và khoảng cách với màn hình nhé!`, '#f87171');
+      }
+
+      setTimeout(() => {
+        state.quizIndex++;
+        if (state.quizIndex < quizQuestions.length) {
+          renderQuizUI();
+        } else {
+          sfx.fanfare();
+          document.getElementById('panel-title').innerText = `🏆 KẾT QUẢ TRÒ CHƠI: ${state.quizScore}/5 ĐIỂM`;
+          setFeedback(`Chúc mừng em đã hoàn thành 5 câu hỏi với số điểm ${state.quizScore}/5!`, '#4ade80');
+          document.getElementById('interactive-controls').innerHTML =
+            `<button class="ctrl-btn good" onclick="restartQuiz()">🔄 Chơi lại từ đầu</button>`;
+        }
+      }, 1700);
+    };
+
+    window.restartQuiz = function() {
+      state.quizScore = 0;
+      state.quizIndex = 0;
+      applyStudentPosture('good');
+      renderQuizUI();
+    };
+
+    /*************************************************************************
+     * 9. KHU VỰC 3 & 8: ÁNH SÁNG PHÒNG MÁY & THÍ NGHIỆM ÁNH SÁNG
+     *************************************************************************/
+    function updateRoomLighting() {
+      ceilingPointLight.intensity = state.ceilingLightOn ? 0.85 : 0.05;
+      lampBulbMat.color.setHex(state.ceilingLightOn ? 0xfffbeb : 0x475569);
+      windowBlind.visible = !state.windowBlindsOpen;
+      sunDirLight.intensity = state.windowBlindsOpen ? 0.65 : 0.08;
+      ambientLight.intensity = (state.ceilingLightOn || state.windowBlindsOpen) ? 0.62 : 0.18;
+      glareMat.opacity = state.directGlare ? 0.78 : 0.0;
+
+      if (!state.ceilingLightOn && !state.windowBlindsOpen) {
+        setFeedback('⚠ Tình huống 1 (Phòng quá tối): Ánh sáng chưa phù hợp.', '#f87171');
+        sayAssistant('Phòng tối quá sẽ làm mắt em phải điều tiết căng thẳng. Hãy bật đèn trần lên nhé!');
+      } else if (state.directGlare) {
+        setFeedback('⚠ Tình huống 2: Không nên để ánh sáng chiếu trực tiếp vào màn hình (gây chói lóa).', '#fbbf24');
+        sayAssistant('Ánh sáng chiếu thẳng vào màn hình gây bóng lóa làm em rất mỏi mắt.');
+      } else {
+        state.badges.lighting = true;
+        saveBadges();
+        setFeedback('✓ Tình huống 3: Ánh sáng phù hợp! Phòng đủ sáng và không chiếu trực tiếp vào màn hình.', '#4ade80');
+        sayAssistant('Rất tuyệt! Phòng học vừa đủ sáng lại không bị chói màn hình.');
+      }
+    }
+
+    window.setLightScenario = function(scen) {
+      sfx.switchLight();
+      state.badges.lightSwitch = true;
+      saveBadges();
+      if (scen === 'toggleCeiling') {
+        state.ceilingLightOn = !state.ceilingLightOn;
+        state.directGlare = false;
+      } else if (scen === 'toggleBlinds') {
+        state.windowBlindsOpen = !state.windowBlindsOpen;
+        state.directGlare = false;
+      } else if (scen === 'dark') {
+        state.ceilingLightOn = false;
+        state.windowBlindsOpen = false;
+        state.directGlare = false;
+      } else if (scen === 'glare') {
+        state.ceilingLightOn = true;
+        state.windowBlindsOpen = true;
+        state.directGlare = true;
+      } else if (scen === 'good') {
+        state.ceilingLightOn = true;
+        state.windowBlindsOpen = true;
+        state.directGlare = false;
+        sfx.correct();
+      }
+      updateRoomLighting();
+      if (state.mode === 'light') renderLightControls();
+    };
+
+    function renderLightControls() {
+      document.getElementById('interactive-controls').innerHTML = `
+        <button class="ctrl-btn" onclick="setLightScenario('toggleCeiling')">💡 Đèn trần: ${state.ceilingLightOn ? 'ĐANG BẬT' : 'ĐANG TẮT'}</button>
+        <button class="ctrl-btn" onclick="setLightScenario('toggleBlinds')">☀️ Rèm cửa sổ: ${state.windowBlindsOpen ? 'MỞ' : 'ĐÓNG'}</button>
+        <button class="ctrl-btn bad" onclick="setLightScenario('dark')">🌙 Thử nghiệm 1: Phòng quá tối</button>
+        <button class="ctrl-btn warn" onclick="setLightScenario('glare')">⚡ Thử nghiệm 2: Chiếu chói màn hình</button>
+        <button class="ctrl-btn good" onclick="setLightScenario('good')">✓ Thử nghiệm 3: Ánh sáng chuẩn</button>
+      `;
+    }
+
+    /*************************************************************************
+     * 10. KHU VỰC 5 & 11: ĐỒNG HỒ 30 PHÚT, NGHỈ NGƠI & NHÌN RA CỬA SỔ
+     *************************************************************************/
+    let usageInterval = null;
+    let restInterval = null;
+
+    function formatTime(sec) {
+      const m = String(Math.floor(sec / 60)).padStart(2, '0');
+      const s = String(sec % 60).padStart(2, '0');
+      return `${m}:${s}`;
+    }
+
+    window.toggleUsageTimer = function() {
+      sfx.click();
+      state.timerRunning = !state.timerRunning;
+      const btn = document.getElementById('btn-timer-start');
+      btn.innerText = state.timerRunning ? '⏸ TẠM DỪNG' : '▶ BẮT ĐẦU';
+      if (state.timerRunning && !usageInterval) {
+        usageInterval = setInterval(() => {
+          if (!state.timerRunning) return;
+          state.timerSeconds += 10; // Tăng tốc độ mô phỏng (mỗi giây thực = 10 giây mô phỏng)
+          document.getElementById('timer-display').innerText = formatTime(state.timerSeconds);
+          if (state.timerSeconds >= 1800) {
+            trigger30MinRestAlert();
+          }
+        }, 1000);
+      }
+    };
+
+    window.fastForward30Min = function() {
+      state.timerSeconds = 1800;
+      document.getElementById('timer-display').innerText = '30:00';
+      trigger30MinRestAlert();
+    };
+
+    function trigger30MinRestAlert() {
+      state.timerRunning = false;
+      document.getElementById('btn-timer-start').innerText = '▶ BẮT ĐẦU';
+      sfx.alarmRest();
+      state.badges.rest = true;
+      saveBadges();
+
+      // Nhân vật học sinh đứng dậy thư giãn
+      mainStudent.bodyGroup.position.set(0.55, 0.15, 0.2);
+      document.getElementById('rest-modal').style.display = 'flex';
+      state.restCountdown = 20;
+      document.getElementById('rest-countdown').innerText = `Thời gian vận động thư giãn: ${state.restCountdown} giây`;
+
+      clearInterval(restInterval);
+      restInterval = setInterval(() => {
+        if (state.restCountdown > 0) {
+          state.restCountdown--;
+          document.getElementById('rest-countdown').innerText = `Thời gian vận động thư giãn: ${state.restCountdown} giây`;
+        }
+      }, 1000);
+    }
+
+    window.doRelaxAction = function(act) {
+      sfx.correct();
+      const st = document.getElementById('relax-status');
+      if (act === 'window') {
+        st.innerText = '👀 Em đang phóng tầm mắt nhìn bầu trời, mây và cây xanh ngoài sân trường...';
+      } else if (act === 'stretch') {
+        st.innerText = '🙆 Hai tay đan vào nhau, vươn vai lên cao hít thở sâu thật sảng khoái!';
+        mainStudent.leftArm.rotation.x = 2.6;
+        mainStudent.rightArm.rotation.x = 2.6;
+      } else if (act === 'walk') {
+        st.innerText = '🚶 Đứng dậy đi lại nhẹ nhàng giúp máu lưu thông và cơ xương dẻo dai!';
+      } else if (act === 'water') {
+        st.innerText = '💧 Uống một ngụm nước mát giúp cơ thể và đôi mắt thêm tỉnh táo!';
+      }
+    };
+
+    window.finishRest = function() {
+      sfx.click();
+      clearInterval(restInterval);
+      document.getElementById('rest-modal').style.display = 'none';
+      state.timerSeconds = 0;
+      document.getElementById('timer-display').innerText = '00:00';
+      mainStudent.leftArm.rotation.x = 0.55;
+      mainStudent.rightArm.rotation.x = 0.55;
+      applyStudentPosture('good');
+      setFeedback('✓ Em đã nghỉ ngơi xong! Cơ thể và đôi mắt đã sẵn sàng học tập tiếp.', '#4ade80');
+    };
+
+    /*************************************************************************
+     * 11. KHU VỰC 6: TƯƠNG TÁC & MINI GAME CHUỘT MÁY TÍNH 3D
+     *************************************************************************/
+    const mousePartQuestions = [
+      { part: 'left', ask: 'Hãy nhấn vào NÚT TRÁI chuột!' },
+      { part: 'right', ask: 'Hãy nhấn vào NÚT PHẢI chuột!' },
+      { part: 'scroll', ask: 'Hãy nhấn vào NÚT CUỘN chuột!' }
+    ];
+
+    window.inspectMousePart = function(partKey) {
+      mouseLeftBtn.material.color.setHex(0x38bdf8);
+      mouseRightBtn.material.color.setHex(0xfbbf24);
+      mouseScrollBtn.material.color.setHex(0xf43f5e);
+
+      if (partKey === 'left') {
+        mouseLeftBtn.material.color.setHex(0x00e676);
+        setFeedback('🖱 Nút trái chuột: Dùng để chọn đối tượng, nháy chuột và thực hiện một số thao tác.', '#4ade80');
+      } else if (partKey === 'right') {
+        mouseRightBtn.material.color.setHex(0x00e676);
+        setFeedback('🖱 Nút phải chuột: Dùng để mở một số thực đơn lệnh.', '#4ade80');
+      } else if (partKey === 'scroll') {
+        mouseScrollBtn.material.color.setHex(0x00e676);
+        setFeedback('🔄 Nút cuộn: Dùng để cuộn trang lên hoặc xuống.', '#4ade80');
+      }
+
+      // Kiểm tra trong mini game chuột
+      if (state.mode === 'mouse' && state.mouseTargetPart) {
+        if (partKey === state.mouseTargetPart) {
+          state.mouseGameScore++;
+          state.badges.mouse = true;
+          saveBadges();
+          sfx.correct();
+          const nextQ = mousePartQuestions[state.mouseGameScore % mousePartQuestions.length];
+          state.mouseTargetPart = nextQ.part;
+          document.getElementById('panel-title').innerText = `🖱 LÀM QUEN VỚI CHUỘT MÁY TÍNH (Điểm mini game: ${state.mouseGameScore})`;
+          setTimeout(() => {
+            setFeedback(`🎉 Đúng rồi (+1 điểm)! Tiếp theo: ${nextQ.ask}`, '#fef08a');
+          }, 1200);
+        } else {
+          sfx.wrong();
+        }
+      } else {
+        sfx.click();
+      }
+    };
+
+    /*************************************************************************
+     * 12. KHU VỰC 7: THỬ THÁCH TỔNG HỢP “EM LÀ CHUYÊN GIA MÁY TÍNH” (6 NHIỆM VỤ)
+     *************************************************************************/
+    function renderChallengeMode() {
+      const b = state.badges;
+      const completedCount = Object.values(b).filter(Boolean).length;
+      document.getElementById('panel-title').innerText = `🎮 EM LÀ CHUYÊN GIA MÁY TÍNH (${completedCount}/6 NHIỆM VỤ HOÀN THÀNH)`;
+
+      if (completedCount === 6) {
+        sfx.fanfare();
+        setFeedback('🏆 CHÚC MỪNG! Em đã biết cách sử dụng máy tính đúng cách và an toàn (6/6 huy hiệu)!', '#4ade80');
+      } else {
+        setFeedback('Hãy bấm vào từng nhiệm vụ bên dưới để thực hiện và thu thập đủ 6 huy hiệu nhé!', '#fef08a');
+      }
+
+      document.getElementById('interactive-controls').innerHTML = `
+        <div style="width:100%">
+          <div class="badge-bar">
+            <span class="badge-item ${b.posture ? 'done' : ''}">1. Tư thế đúng ${b.posture ? '✓' : ''}</span>
+            <span class="badge-item ${b.distance ? 'done' : ''}">2. Cự ly 50-80cm ${b.distance ? '✓' : ''}</span>
+            <span class="badge-item ${b.lighting ? 'done' : ''}">3. Ánh sáng chuẩn ${b.lighting ? '✓' : ''}</span>
+            <span class="badge-item ${b.lightSwitch ? 'done' : ''}">4. Bật/Tắt đèn ${b.lightSwitch ? '✓' : ''}</span>
+            <span class="badge-item ${b.rest ? 'done' : ''}">5. Nghỉ sau 30p ${b.rest ? '✓' : ''}</span>
+            <span class="badge-item ${b.mouse ? 'done' : ''}">6. Nút chuột ${b.mouse ? '✓' : ''}</span>
+          </div>
+          <div style="margin-top:10px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;">
+            <button class="ctrl-btn good" onclick="switchMode('posture')">Làm NV 1 & 2 (Tư thế & Cự ly)</button>
+            <button class="ctrl-btn warn" onclick="switchMode('light')">Làm NV 3 & 4 (Ánh sáng)</button>
+            <button class="ctrl-btn purple" onclick="fastForward30Min()">Làm NV 5 (Nghỉ ngơi 30p)</button>
+            <button class="ctrl-btn" onclick="switchMode('mouse')">Làm NV 6 (Chuột 3D)</button>
+            <button class="ctrl-btn bad" onclick="resetAllProgress()">🔄 Chơi lại từ đầu</button>
+          </div>
+        </div>
+      `;
+    }
+
+    window.resetAllProgress = function() {
+      sfx.click();
+      Object.keys(state.badges).forEach(k => state.badges[k] = false);
+      saveBadges();
+      renderChallengeMode();
+    };
+
+    /*************************************************************************
+     * 13. CHUYỂN ĐỔI GIỮA CÁC KHU VỰC HỌC TẬP (SWITCH MODE)
+     *************************************************************************/
+    window.switchMode = function(mode) {
+      sfx.click();
+      state.mode = mode;
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      const activeTab = document.getElementById('tab-' + mode);
+      if (activeTab) activeTab.classList.add('active');
+
+      // Đặt lại góc nhìn mặc định hoặc cận cảnh theo khu vực
+      cameraTargetPos.set(0, 1.65, 2.3);
+      cameraLookOverride = null;
+      const ctrl = document.getElementById('interactive-controls');
+
+      if (mode === 'explore') {
+        document.getElementById('panel-title').innerText = '🏠 KHÁM PHÁ PHÒNG TIN HỌC 360° & BẢNG KIẾN THỨC';
+        setFeedback('Hãy kéo chuột xoay 360° quanh phòng và bấm vào 5 biểu tượng Hotspot phát sáng!', '#fef08a');
+        sayAssistant('Em hãy xoay 360° quan sát phòng máy tính, bảng lớp, cửa sổ và nhấp vào các nhãn kiến thức nhé!');
+        ctrl.innerHTML = hotspotData.map(h =>
+          `<button class="ctrl-btn" onclick="setFeedback('${h.msg}', '#4ade80')">${h.label}</button>`
+        ).join('');
+      }
+      else if (mode === 'posture') {
+        cameraTargetPos.set(1.25, 1.35, -0.35);
+        cameraLookOverride = new THREE.Vector3(0, 1.0, -0.55);
+        document.getElementById('panel-title').innerText = '🪑 KHU VỰC 1 & 2: THỰC HÀNH TƯ THẾ NGỒI ĐÚNG & SAI';
+        sayAssistant('Em hãy quan sát tư thế của bạn nhỏ và kéo thanh khoảng cách từ 50 đến 80 cm nhé!');
+        applyStudentPosture('good');
+        ctrl.innerHTML = `
+          <button class="ctrl-btn good" onclick="applyStudentPosture('good')">✓ Tư thế ĐÚNG</button>
+          <button class="ctrl-btn bad" onclick="applyStudentPosture('A')">✗ Sai A: Quá gần</button>
+          <button class="ctrl-btn bad" onclick="applyStudentPosture('B')">✗ Sai B: Cong lưng</button>
+          <button class="ctrl-btn bad" onclick="applyStudentPosture('C')">✗ Sai C: Lệch người</button>
+          <button class="ctrl-btn bad" onclick="applyStudentPosture('D')">✗ Sai D: Chân không ổn định</button>
+          <div class="slider-wrap">
+            <span>📏 Cự ly mắt:</span>
+            <input type="range" id="dist-slider" min="20" max="120" value="${state.distanceCm}" oninput="setDistanceCm(this.value)">
+          </div>
+        `;
+      }
+      else if (mode === 'quiz') {
+        cameraTargetPos.set(1.15, 1.35, -0.35);
+        cameraLookOverride = new THREE.Vector3(0, 1.0, -0.55);
+        state.quizIndex = 0;
+        state.quizScore = 0;
+        sayAssistant('Đố em bạn nhỏ nào đang ngồi đúng tư thế? Hãy quan sát thật kỹ nhé!');
+        renderQuizUI();
+      }
+      else if (mode === 'light') {
+        cameraTargetPos.set(0, 1.65, 1.8);
+        cameraLookOverride = new THREE.Vector3(0, 1.2, -0.88);
+        document.getElementById('panel-title').innerText = '💡 KHU VỰC 3 & 8: THÍ NGHIỆM ÁNH SÁNG PHÒNG MÁY';
+        sayAssistant('Em thử bật/tắt đèn và điều chỉnh rèm cửa để tìm điều kiện ánh sáng phù hợp không gây chói màn hình nhé!');
+        updateRoomLighting();
+        renderLightControls();
+      }
+      else if (mode === 'eyes') {
+        cameraTargetPos.set(1.1, 1.25, -0.45);
+        cameraLookOverride = new THREE.Vector3(0, 1.08, -0.65);
+        document.getElementById('panel-title').innerText = '👀 KHU VỰC 4: TRÒ CHƠI “ĐÔI MẮT CỦA EM”';
+        sayAssistant('Khoảng cách từ mắt đến màn hình nên khoảng 50–80 cm. Em hãy kéo thanh trượt về vùng màu xanh an toàn!');
+        setDistanceCm(35);
+        ctrl.innerHTML = `
+          <div class="slider-wrap">
+            <span>👀 Điều chỉnh khoảng cách mắt – màn hình (20cm – 120cm):</span>
+            <input type="range" id="dist-slider" min="20" max="120" value="${state.distanceCm}" oninput="setDistanceCm(this.value)">
+          </div>
+          <button class="ctrl-btn good" onclick="setDistanceCm(65)">Đặt chuẩn 65 cm</button>
+        `;
+      }
+      else if (mode === 'window') {
+        cameraTargetPos.set(-2.5, 1.75, 0);
+        cameraLookOverride = new THREE.Vector3(-12, 2.4, -1);
+        document.getElementById('panel-title').innerText = '🌿 KHU VỰC 11: MÔ PHỎNG NHÌN RA XA THƯ GIÃN MẮT';
+        setFeedback('👀 Hãy nhìn ra xa ngắm cây xanh, bầu trời, đàn chim và đám mây trôi để thư giãn đôi mắt.', '#4ade80');
+        sayAssistant('Sau thời gian sử dụng máy tính, nhìn ra xa ngắm cây xanh giúp đôi mắt em hết mỏi ngay đấy!');
+        ctrl.innerHTML = `
+          <button class="ctrl-btn good" onclick="fastForward30Min()">⏰ Mở bảng hoạt động nghỉ ngơi 30 phút</button>
+          <button class="ctrl-btn" onclick="switchMode('explore')">🏠 Quay lại phòng máy</button>
+        `;
+      }
+      else if (mode === 'mouse') {
+        cameraTargetPos.set(2.4, 1.55, 0.25);
+        cameraLookOverride = new THREE.Vector3(2.4, 0.88, -0.7);
+        state.mouseTargetPart = 'left';
+        document.getElementById('panel-title').innerText = `🖱 KHU VỰC 6: LÀM QUEN VỚI CHUỘT MÁY TÍNH (Điểm: ${state.mouseGameScore})`;
+        setFeedback('🎯 Mini game: Hãy nhấn vào NÚT TRÁI chuột (trên mô hình 3D hoặc nút bên dưới)!', '#fef08a');
+        sayAssistant('Chuột máy tính có Nút trái, Nút phải và Nút cuộn. Em hãy nhấp trực tiếp vào từng bộ phận của chuột 3D nhé!');
+        ctrl.innerHTML = `
+          <button class="ctrl-btn" onclick="inspectMousePart('left')">🖱 Nút trái chuột</button>
+          <button class="ctrl-btn warn" onclick="inspectMousePart('right')">🖱 Nút phải chuột</button>
+          <button class="ctrl-btn purple" onclick="inspectMousePart('scroll')">🔄 Nút cuộn</button>
+        `;
+      }
+      else if (mode === 'challenge') {
+        sayAssistant('Hãy hoàn thành đủ 6 nhiệm vụ để nhận danh hiệu Chuyên gia máy tính nhí nhé!');
+        renderChallengeMode();
+      }
+    };
+
+    /*************************************************************************
+     * 14. ĐIỀU KHIỂN CHUỘT, CẢM ỨNG, BÀN PHÍM, GYROSCOPE & WEBXR (YÊU CẦU 18)
+     *************************************************************************/
+    const raycaster = new THREE.Raycaster();
+    const mouseVec = new THREE.Vector2();
+    let dwellTarget = null;
+    let dwellTimer = null;
+
+    container.addEventListener('pointerdown', (e) => {
+      isPointerDown = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      startLon = lon;
+      startLat = lat;
+
+      // Kiểm tra click vào đối tượng 3D
+      mouseVec.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseVec.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycaster.setFromCamera(mouseVec, camera);
+      const intersects = raycaster.intersectObjects(interactables);
+      if (intersects.length > 0) {
+        handle3DObjectActivate(intersects[0].object);
+      }
+    });
+
+    container.addEventListener('pointermove', (e) => {
+      if (isPointerDown && !cameraLookOverride) {
+        lon = (startX - e.clientX) * 0.18 + startLon;
+        lat = (e.clientY - startY) * 0.18 + startLat;
+        lat = Math.max(-75, Math.min(75, lat));
+      }
+    });
+
+    window.addEventListener('pointerup', () => { isPointerDown = false; });
+
+    window.addEventListener('keydown', (e) => {
+      if (cameraLookOverride) return;
+      if (e.key === 'ArrowLeft' || e.key === 'a') lon -= 4;
+      if (e.key === 'ArrowRight' || e.key === 'd') lon += 4;
+      if (e.key === 'ArrowUp' || e.key === 'w') lat = Math.min(75, lat + 3);
+      if (e.key === 'ArrowDown' || e.key === 's') lat = Math.max(-75, lat - 3);
+    });
+
+    function handle3DObjectActivate(obj) {
+      const data = obj.userData;
+      if (!data) return;
+      if (data.type === 'hotspot') {
+        sfx.click();
+        setFeedback(data.info, '#4ade80');
+        sayAssistant(data.info);
+      } else if (data.type === 'mousePart') {
+        inspectMousePart(data.part);
+      } else if (data.type === 'vrNav') {
+        switchMode(data.targetMode);
+      }
+    }
+
+    // Chế độ VR & Gaze Reticle (Nhìn 1.5 giây tự kích hoạt)
+    window.enterVRMode = async function() {
+      sfx.click();
+      document.getElementById('start-modal').style.display = 'none';
+      state.vrActive = true;
+      document.getElementById('vr-reticle').style.display = 'block';
+      document.getElementById('btn-exit-vr').style.display = 'inline-block';
+
+      if (navigator.xr) {
+        try {
+          const supported = await navigator.xr.isSessionSupported('immersive-vr');
+          if (supported) {
+            const session = await navigator.xr.requestSession('immersive-vr');
+            renderer.xr.setSession(session);
+            return;
+          }
+        } catch (err) {
+          console.warn('Thiết bị sử dụng chế độ VR 360 trên màn hình:', err);
+        }
+      }
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      }
+      setFeedback('🥽 Đang ở chế độ VR 360°: Hướng tâm ngắm vào các nút trong 1.5 giây để chọn!', '#4ade80');
+    };
+
+    window.exitVRMode = function() {
+      state.vrActive = false;
+      document.getElementById('vr-reticle').style.display = 'none';
+      document.getElementById('btn-exit-vr').style.display = 'none';
+      if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
+      const session = renderer.xr.getSession();
+      if (session) session.end();
+    };
+
+    // Cảm biến xoay điện thoại (Gyroscope)
+    window.toggleGyro = function() {
+      state.gyroActive = !state.gyroActive;
+      document.getElementById('btn-gyro').innerText = state.gyroActive ? '📱 Cảm biến: BẬT' : '📱 Cảm biến xoay';
+      if (state.gyroActive && typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+        DeviceOrientationEvent.requestPermission().catch(() => {});
+      }
+    };
+
+    window.addEventListener('deviceorientation', (e) => {
+      if (!state.gyroActive || cameraLookOverride) return;
+      if (e.alpha !== null && e.beta !== null) {
+        lon = -e.alpha;
+        lat = Math.max(-70, Math.min(70, e.beta - 60));
+      }
+    });
+
+    /*************************************************************************
+     * 15. CÁC HÀM GIAO DIỆN & TIẾP CẬN (ACCESSIBILITY)
+     *************************************************************************/
+    function setFeedback(msg, color = '#fef08a') {
+      const fb = document.getElementById('feedback-banner');
+      fb.innerText = msg;
+      fb.style.color = color;
+    }
+
+    function sayAssistant(text) {
+      document.getElementById('assistant-text').innerText = text;
+    }
+
+    window.toggleAssistant = function() {
+      state.assistantVisible = !state.assistantVisible;
+      document.getElementById('assistant-bubble').style.display = state.assistantVisible ? 'block' : 'none';
+    };
+
+    window.toggleSound = function() {
+      sfx.enabled = !sfx.enabled;
+      document.getElementById('btn-sound').innerText = sfx.enabled ? '🔊 Âm thanh: ON' : '🔇 Âm thanh: OFF';
+    };
+
+    let currentFontScale = 1;
+    window.changeFontSize = function(delta) {
+      currentFontScale = Math.max(0.85, Math.min(1.3, currentFontScale + delta));
+      document.documentElement.style.setProperty('--font-scale', currentFontScale);
+    };
+
+    window.toggleAnimSpeed = function() {
+      state.animSpeed = state.animSpeed === 1 ? 0.4 : 1;
+      document.getElementById('btn-speed').innerText = `⚡ Tốc độ: ${state.animSpeed}x`;
+    };
+
+    window.startApp = function(initialMode) {
+      document.getElementById('start-modal').style.display = 'none';
+      switchMode(initialMode);
+    };
+
+    window.goHomeModal = function() {
+      document.getElementById('start-modal').style.display = 'flex';
+    };
+
+    window.showHelpModal = function() {
+      document.getElementById('help-modal').style.display = 'flex';
+    };
+
+    window.closeHelpModal = function() {
+      document.getElementById('help-modal').style.display = 'none';
+    };
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    /*************************************************************************
+     * 16. VÒNG LẶP ANIMATION 60 FPS & GAZE RAYCASTER
+     *************************************************************************/
+    const clock = new THREE.Clock();
+
+    renderer.setAnimationLoop(() => {
+      const t = clock.getElapsedTime() * state.animSpeed;
+
+      // Chuyển động mây và đàn chim ngoài cửa sổ
+      clouds.forEach((c, i) => {
+        c.position.z = -6 + ((t * 0.5 + i * 4) % 14);
+      });
+      birds.forEach((b, i) => {
+        b.position.z = -5 + ((t * 1.4 + i * 3) % 12);
+        b.position.y = 3.2 + Math.sin(t * 3 + i) * 0.25;
+      });
+
+      // Hiệu ứng nhấp nhô nhẹ cho các Hotspot
+      hotspotSprites.forEach((sp, idx) => {
+        sp.position.y += Math.sin(t * 2.5 + idx) * 0.0008;
+      });
+
+      // Di chuyển mượt Camera
+      camera.position.lerp(cameraTargetPos, 0.08);
+      if (cameraLookOverride) {
+        camera.lookAt(cameraLookOverride);
+      } else {
+        const phi = THREE.MathUtils.degToRad(90 - lat);
+        const theta = THREE.MathUtils.degToRad(lon);
+        const lookTarget = new THREE.Vector3(
+          camera.position.x + Math.sin(phi) * Math.cos(theta),
+          camera.position.y + Math.cos(phi),
+          camera.position.z + Math.sin(phi) * Math.sin(theta)
+        );
+        camera.lookAt(lookTarget);
+      }
+
+      // Kiểm tra tâm ngắm VR (Gaze Dwell 1.5s)
+      if (state.vrActive) {
+        raycaster.setFromCamera({ x: 0, y: 0 }, camera);
+        const hits = raycaster.intersectObjects(interactables);
+        const reticle = document.getElementById('vr-reticle');
+        if (hits.length > 0) {
+          const hitObj = hits[0].object;
+          if (dwellTarget !== hitObj) {
+            dwellTarget = hitObj;
+            reticle.classList.add('dwelling');
+            clearTimeout(dwellTimer);
+            dwellTimer = setTimeout(() => {
+              handle3DObjectActivate(hitObj);
+              reticle.classList.remove('dwelling');
+            }, 1400);
+          }
+        } else {
+          dwellTarget = null;
+          reticle.classList.remove('dwelling');
+          clearTimeout(dwellTimer);
+        }
+      }
+
+      renderer.render(scene, camera);
+    });
+  </script>
 </body>
 </html>
