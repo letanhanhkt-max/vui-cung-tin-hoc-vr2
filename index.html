@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Bài 4: Làm Việc Với Máy Tính - Mô Phỏng VR 360° Tin Học Lớp 3</title>
+  <title>Vui Học Tin Học VR 360° - Sử Dụng Máy Tính Đúng Cách & An Toàn (Lớp 1, 2, 3, 4, 5)</title>
   <!-- Thư viện Three.js chính thức từ CDN ổn định -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <style>
@@ -13,7 +13,7 @@
       --warning: #ef6c00;
       --danger: #c62828;
       --purple: #6a1b9a;
-      --bg-panel: rgba(15, 23, 42, 0.92);
+      --bg-panel: rgba(15, 23, 42, 0.93);
       --font-scale: 1;
     }
     * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
@@ -25,105 +25,122 @@
     }
     #canvas-container { width: 100%; height: 100%; position: absolute; top: 0; left: 0; z-index: 1; }
 
-    /* MÀN HÌNH KHỞI ĐỘNG */
+    /* MÀN HÌNH KHỞI ĐỘNG DÀNH CHO LỚP 1, 2, 3, 4, 5 */
     #start-modal {
       position: absolute; inset: 0; z-index: 1000;
-      background: linear-gradient(135deg, rgba(2, 136, 209, 0.95), rgba(38, 166, 154, 0.95));
-      display: flex; align-items: center; justify-content: center; padding: 20px;
+      background: linear-gradient(135deg, rgba(2, 136, 209, 0.96), rgba(0, 150, 136, 0.96));
+      display: flex; align-items: center; justify-content: center; padding: 16px;
     }
     .start-box {
-      background: #ffffff; border-radius: 28px; padding: 28px 32px; max-width: 720px; width: 100%;
-      text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.35); border: 5px solid #ffca28;
+      background: #ffffff; border-radius: 28px; padding: 26px 30px; max-width: 760px; width: 100%;
+      text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); border: 5px solid #ffca28;
     }
     .start-badge {
-      display: inline-block; background: #e1f5fe; color: #0277bd; font-weight: 800;
-      padding: 6px 18px; border-radius: 20px; font-size: 0.95rem; margin-bottom: 10px;
+      display: inline-block; background: #e0f2f1; color: #00695c; font-weight: 800;
+      padding: 6px 18px; border-radius: 20px; font-size: 0.95rem; margin-bottom: 8px;
     }
-    .start-title { color: #d84315; font-size: 2rem; font-weight: 900; margin: 5px 0 10px; }
-    .start-sub { color: #37474f; font-size: 1.15rem; font-weight: 600; margin-bottom: 24px; }
-    .start-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .start-title { color: #d84315; font-size: 1.9rem; font-weight: 900; margin: 4px 0 8px; line-height: 1.25; }
+    .start-sub { color: #37474f; font-size: 1.1rem; font-weight: 600; margin-bottom: 20px; }
+    .start-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
     .big-btn {
-      border: none; border-radius: 18px; padding: 16px 14px; font-size: 1.05rem; font-weight: 800;
+      border: none; border-radius: 18px; padding: 15px 12px; font-size: 1rem; font-weight: 800;
       color: #fff; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
       box-shadow: 0 6px 15px rgba(0,0,0,0.2);
     }
     .big-btn:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
     .btn-blue { background: linear-gradient(135deg, #0288d1, #03a9f4); }
     .btn-green { background: linear-gradient(135deg, #2e7d32, #4caf50); }
+    .btn-teal { background: linear-gradient(135deg, #00897b, #26a69a); }
     .btn-orange { background: linear-gradient(135deg, #ef6c00, #ff9800); }
     .btn-vr-start {
       background: linear-gradient(135deg, #6a1b9a, #ab47bc); width: 100%; padding: 14px;
-      border-radius: 16px; font-size: 1.1rem; font-weight: 800; color: #fff; border: none; cursor: pointer;
+      border-radius: 16px; font-size: 1.08rem; font-weight: 800; color: #fff; border: none; cursor: pointer;
     }
 
     /* THANH CÔNG CỤ PHÍA TRÊN */
     #top-bar {
-      position: absolute; top: 10px; left: 10px; right: 10px; z-index: 100;
-      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 8px;
+      position: absolute; top: 8px; left: 8px; right: 8px; z-index: 100;
+      display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px;
       pointer-events: none;
     }
     .nav-group, .util-group {
-      display: flex; flex-wrap: wrap; gap: 6px; background: var(--bg-panel);
-      padding: 7px 12px; border-radius: 26px; pointer-events: auto;
-      border: 1px solid rgba(255,255,255,0.2); box-shadow: 0 4px 15px rgba(0,0,0,0.35);
+      display: flex; flex-wrap: wrap; gap: 5px; background: var(--bg-panel);
+      padding: 6px 10px; border-radius: 24px; pointer-events: auto;
+      border: 1px solid rgba(255,255,255,0.22); box-shadow: 0 4px 15px rgba(0,0,0,0.35);
     }
     .tab-btn, .icon-btn {
-      border: none; border-radius: 18px; padding: 7px 13px; font-size: 0.88rem; font-weight: 700;
+      border: none; border-radius: 16px; padding: 6px 12px; font-size: 0.85rem; font-weight: 700;
       color: #fff; background: rgba(255,255,255,0.12); cursor: pointer; transition: 0.2s;
     }
     .tab-btn:hover, .icon-btn:hover { background: rgba(255,255,255,0.25); transform: scale(1.04); }
     .tab-btn.active { background: #ffca28; color: #0f172a; box-shadow: 0 0 10px #ffca28; }
+    .light-quick-btn { background: #f59e0b !important; color: #0f172a !important; }
 
-    /* ĐỒNG HỒ SỬ DỤNG MÁY TÍNH (KHU VỰC 5) */
+    /* HỘP KHUYẾN CÁO ÁNH SÁNG NỔI BẬT */
+    #light-advisory-banner {
+      position: absolute; top: 64px; left: 50%; transform: translateX(-50%); z-index: 98;
+      background: linear-gradient(90deg, #b45309, #d97706); color: #ffffff;
+      padding: 8px 18px; border-radius: 20px; font-size: 0.88rem; font-weight: 700;
+      border: 2px solid #fde047; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+      max-width: 780px; width: 92%; text-align: center; display: none;
+    }
+
+    /* ĐỒNG HỒ SỬ DỤNG MÁY TÍNH */
     #timer-widget {
-      position: absolute; top: 68px; right: 14px; z-index: 95;
-      background: var(--bg-panel); color: #fff; padding: 10px 16px; border-radius: 18px;
+      position: absolute; top: 66px; right: 12px; z-index: 95;
+      background: var(--bg-panel); color: #fff; padding: 8px 14px; border-radius: 16px;
       border: 2px solid #4dd0e1; text-align: center; box-shadow: 0 4px 14px rgba(0,0,0,0.35);
     }
-    #timer-label { font-size: 0.75rem; color: #80deea; font-weight: 800; letter-spacing: 0.5px; }
-    #timer-display { font-size: 1.45rem; font-weight: 900; color: #ffeb3b; margin: 2px 0 6px; font-family: monospace; }
+    #timer-label { font-size: 0.72rem; color: #80deea; font-weight: 800; }
+    #timer-display { font-size: 1.35rem; font-weight: 900; color: #ffeb3b; margin: 2px 0 5px; font-family: monospace; }
     .mini-btn {
-      background: #00acc1; color: #fff; border: none; border-radius: 10px;
-      padding: 4px 9px; font-size: 0.78rem; font-weight: 700; cursor: pointer; margin: 2px;
+      background: #00acc1; color: #fff; border: none; border-radius: 8px;
+      padding: 4px 8px; font-size: 0.75rem; font-weight: 700; cursor: pointer; margin: 1px;
     }
-    .mini-btn:hover { background: #26c6da; }
 
-    /* TRỢ GIẢNG ẢO (GÓC TRÁI DƯỚI) */
+    /* THẦY GIÁO TRỢ GIẢNG NGƯỜI ĐÀ NẴNG (GÓC TRÁI DƯỚI) */
     #assistant-box {
-      position: absolute; bottom: 165px; left: 14px; z-index: 95;
-      display: flex; align-items: flex-end; gap: 10px; max-width: 360px; pointer-events: auto;
+      position: absolute; bottom: 168px; left: 12px; z-index: 95;
+      display: flex; align-items: flex-end; gap: 10px; max-width: 400px; pointer-events: auto;
     }
     .avatar-circle {
-      width: 58px; height: 58px; border-radius: 50%; background: #ffca28;
-      border: 3px solid #fff; display: flex; align-items: center; justify-content: center;
-      font-size: 2rem; box-shadow: 0 4px 12px rgba(0,0,0,0.35); flex-shrink: 0; cursor: pointer;
+      width: 62px; height: 62px; border-radius: 50%; background: linear-gradient(135deg, #0288d1, #26c6da);
+      border: 3px solid #ffca28; display: flex; align-items: center; justify-content: center;
+      font-size: 2.1rem; box-shadow: 0 4px 12px rgba(0,0,0,0.4); flex-shrink: 0; cursor: pointer;
     }
     .speech-bubble {
       background: #ffffff; color: #1e293b; padding: 11px 15px; border-radius: 18px 18px 18px 4px;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.3); border: 2px solid #0288d1; font-size: 0.92rem; line-height: 1.4;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.35); border: 2px solid #0288d1; font-size: 0.92rem; line-height: 1.42;
     }
-    .speech-name { font-weight: 800; color: #0277bd; font-size: 0.8rem; margin-bottom: 3px; display: flex; justify-content: space-between; }
+    .speech-name {
+      font-weight: 800; color: #0277bd; font-size: 0.82rem; margin-bottom: 4px;
+      display: flex; justify-content: space-between; align-items: center; gap: 6px;
+    }
+    .speak-again-btn {
+      background: #e1f5fe; color: #0277bd; border: 1px solid #0288d1; border-radius: 10px;
+      padding: 2px 7px; font-size: 0.75rem; font-weight: 700; cursor: pointer;
+    }
 
-    /* BẢNG ĐIỀU KHIỂN KHU VỰC PHÍA DƯỚI */
+    /* BẢNG ĐIỀU KHIỂN CHÍNH PHÍA DƯỚI */
     #bottom-panel {
-      position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); z-index: 100;
-      width: 95%; max-width: 900px; background: var(--bg-panel); color: #fff;
-      border-radius: 22px; padding: 14px 20px; border: 2px solid #38bdf8;
+      position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); z-index: 100;
+      width: 96%; max-width: 920px; background: var(--bg-panel); color: #fff;
+      border-radius: 22px; padding: 12px 18px; border: 2px solid #38bdf8;
       box-shadow: 0 8px 30px rgba(0,0,0,0.5); text-align: center;
     }
-    #panel-title { font-size: 0.95rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; margin-bottom: 4px; }
+    #panel-title { font-size: 0.92rem; font-weight: 800; color: #38bdf8; text-transform: uppercase; margin-bottom: 4px; }
     #feedback-banner {
-      font-size: 1.05rem; font-weight: 700; color: #fef08a; min-height: 32px;
+      font-size: 1.02rem; font-weight: 700; color: #fef08a; min-height: 30px;
       display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;
-      padding: 4px 12px; border-radius: 12px; background: rgba(255,255,255,0.07);
+      padding: 4px 12px; border-radius: 12px; background: rgba(255,255,255,0.08);
     }
     #interactive-controls {
-      display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px;
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 7px;
     }
     .ctrl-btn {
-      background: #0288d1; color: #fff; border: none; padding: 8px 14px; border-radius: 14px;
-      font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+      background: #0288d1; color: #fff; border: none; padding: 8px 13px; border-radius: 14px;
+      font-size: 0.88rem; font-weight: 700; cursor: pointer; transition: 0.2s;
     }
     .ctrl-btn:hover { filter: brightness(1.15); transform: translateY(-2px); }
     .ctrl-btn.good { background: #2e7d32; }
@@ -132,37 +149,34 @@
     .ctrl-btn.purple { background: #7b1fa2; }
 
     .slider-wrap {
-      display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.12);
-      padding: 6px 14px; border-radius: 16px; font-weight: 700;
+      display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.12);
+      padding: 5px 12px; border-radius: 15px; font-weight: 700; font-size: 0.88rem;
     }
-    input[type="range"] { width: 170px; accent-color: #00e676; cursor: pointer; }
+    input[type="range"] { width: 160px; accent-color: #00e676; cursor: pointer; }
 
-    /* MÀN HÌNH NGHỈ NGƠI 30 PHÚT & HƯỚNG DẪN MODAL */
+    /* MODAL NGHỈ NGƠI 30 PHÚT & HƯỚNG DẪN */
     .overlay-modal {
       position: absolute; inset: 0; z-index: 950; background: rgba(15, 23, 42, 0.85);
-      display: none; align-items: center; justify-content: center; padding: 20px;
+      display: none; align-items: center; justify-content: center; padding: 18px;
     }
     .modal-card {
-      background: #f0fdf4; color: #14532d; border-radius: 26px; padding: 26px;
+      background: #f0fdf4; color: #14532d; border-radius: 26px; padding: 24px;
       max-width: 620px; width: 100%; text-align: center; border: 4px solid #4ade80;
       box-shadow: 0 15px 40px rgba(0,0,0,0.4);
     }
-    .relax-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 16px 0; }
+    .relax-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 14px 0; }
     .relax-btn {
-      background: #16a34a; color: #fff; border: none; padding: 12px; border-radius: 14px;
-      font-size: 1rem; font-weight: 700; cursor: pointer;
+      background: #16a34a; color: #fff; border: none; padding: 11px; border-radius: 14px;
+      font-size: 0.98rem; font-weight: 700; cursor: pointer;
     }
-    .relax-btn:hover { background: #15803d; }
 
-    /* HUY HIỆU THỬ THÁCH */
-    .badge-bar { display: flex; justify-content: center; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+    .badge-bar { display: flex; justify-content: center; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
     .badge-item {
-      padding: 4px 10px; border-radius: 12px; font-size: 0.8rem; font-weight: 700;
+      padding: 4px 10px; border-radius: 12px; font-size: 0.78rem; font-weight: 700;
       background: rgba(255,255,255,0.12); color: #94a3b8;
     }
     .badge-item.done { background: #16a34a; color: #fff; box-shadow: 0 0 8px #4ade80; }
 
-    /* CON TRỎ TÂM NGẮM VR / GAZE RETICLE */
     #vr-reticle {
       position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
       width: 22px; height: 22px; border: 3px solid #ffca28; border-radius: 50%;
@@ -171,103 +185,116 @@
     #vr-reticle.dwelling { border-color: #00e676; transform: translate(-50%, -50%) scale(1.4); transition: 1.2s; }
 
     @media (max-width: 768px) {
-      .start-title { font-size: 1.5rem; }
-      #assistant-box { bottom: 185px; max-width: 280px; }
-      #timer-widget { top: auto; bottom: 185px; right: 10px; padding: 6px 10px; }
+      .start-title { font-size: 1.45rem; }
+      #assistant-box { bottom: 182px; max-width: 295px; }
+      #timer-widget { top: auto; bottom: 182px; right: 8px; padding: 6px 10px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- MÀN HÌNH KHỞI ĐỘNG (YÊU CẦU 3) -->
+  <!-- MÀN HÌNH KHỞI ĐỘNG DÀNH CHO HỌC SINH LỚP 1, 2, 3, 4, 5 -->
   <div id="start-modal">
     <div class="start-box">
-      <div class="start-badge">TIN HỌC LỚP 3 – KẾT NỐI TRI THỨC VỚI CUỘC SỐNG</div>
-      <h1 class="start-title">BÀI 4 – LÀM VIỆC VỚI MÁY TÍNH</h1>
-      <p class="start-sub">“Em cùng khám phá cách sử dụng máy tính đúng cách và an toàn!”</p>
+      <div class="start-badge">HỌC LIỆU SỐ THỰC TẾ ẢO (VR 360°) – MÔN TIN HỌC TIỂU HỌC (LỚP 1, 2, 3, 4, 5)</div>
+      <h1 class="start-title">LÀM QUEN VÀ SỬ DỤNG MÁY TÍNH<br>ĐÚNG CÁCH – AN TOÀN</h1>
+      <p class="start-sub">“Thầy trò mình cùng khám phá phòng máy, ngồi đúng tư thế và bảo vệ đôi mắt sáng khỏe nghe!”</p>
       <div class="start-grid">
         <button class="big-btn btn-blue" onclick="startApp('explore')">
-          <span style="font-size:2rem">🔵</span>
+          <span style="font-size:1.9rem">🔵</span>
           <span>KHÁM PHÁ PHÒNG MÁY</span>
         </button>
         <button class="big-btn btn-green" onclick="startApp('posture')">
-          <span style="font-size:2rem">🟢</span>
+          <span style="font-size:1.9rem">🟢</span>
           <span>THỰC HÀNH TƯ THẾ NGỒI</span>
         </button>
+        <button class="big-btn btn-teal" onclick="startApp('eyegame')">
+          <span style="font-size:1.9rem">🟣</span>
+          <span>TRÒ CHƠI THƯ GIÃN MẮT</span>
+        </button>
         <button class="big-btn btn-orange" onclick="startApp('challenge')">
-          <span style="font-size:2rem">🟠</span>
-          <span>THỬ THÁCH</span>
+          <span style="font-size:1.9rem">🟠</span>
+          <span>THỬ THÁCH TỔNG HỢP</span>
         </button>
       </div>
-      <button class="btn-vr-start" onclick="enterVRMode()">🥽 VÀO CHẾ ĐỘ VR (WebXR / 360°)</button>
+      <button class="btn-vr-start" onclick="enterVRMode()">🥽 VÀO CHẾ ĐỘ THỰC TẾ ẢO VR (WebXR / 360°)</button>
     </div>
   </div>
 
-  <!-- THANH ĐIỀU HƯỚNG & CÔNG CỤ TIẾP CẬN -->
+  <!-- THANH CÔNG CỤ PHÍA TRÊN -->
   <div id="top-bar">
     <div class="nav-group">
       <button class="tab-btn active" id="tab-explore" onclick="switchMode('explore')">🏠 Phòng máy</button>
       <button class="tab-btn" id="tab-posture" onclick="switchMode('posture')">🪑 Tư thế ngồi</button>
-      <button class="tab-btn" id="tab-quiz" onclick="switchMode('quiz')">🎯 Game Tư thế</button>
+      <button class="tab-btn" id="tab-quiz" onclick="switchMode('quiz')">🎯 Đố vui Tư thế</button>
       <button class="tab-btn" id="tab-light" onclick="switchMode('light')">💡 Ánh sáng</button>
-      <button class="tab-btn" id="tab-eyes" onclick="switchMode('eyes')">👀 Đôi mắt</button>
+      <button class="tab-btn" id="tab-eyes" onclick="switchMode('eyes')">📏 Cự ly Mắt</button>
+      <button class="tab-btn" id="tab-eyegame" onclick="switchMode('eyegame')">🟢 Điểm tròn Luyện mắt</button>
       <button class="tab-btn" id="tab-window" onclick="switchMode('window')">🌿 Nhìn ra xa</button>
       <button class="tab-btn" id="tab-mouse" onclick="switchMode('mouse')">🖱 Chuột 3D</button>
-      <button class="tab-btn" id="tab-challenge" onclick="switchMode('challenge')">🎮 Thử thách</button>
+      <button class="tab-btn" id="tab-challenge" onclick="switchMode('challenge')">🏆 Thử thách</button>
     </div>
     <div class="util-group">
+      <button class="icon-btn light-quick-btn" id="btn-quick-light" onclick="quickToggleLightWithAdvisory()">💡 Bật/Tắt Đèn</button>
+      <button class="icon-btn" id="btn-voice" onclick="toggleVoice()">🗣️ Giọng Thầy: BẬT</button>
       <button class="icon-btn" id="btn-sound" onclick="toggleSound()">🔊 Âm thanh: ON</button>
-      <button class="icon-btn" id="btn-gyro" onclick="toggleGyro()">📱 Cảm biến xoay</button>
-      <button class="icon-btn" onclick="changeFontSize(0.1)">A+</button>
-      <button class="icon-btn" onclick="changeFontSize(-0.1)">A-</button>
-      <button class="icon-btn" onclick="toggleAnimSpeed()" id="btn-speed">⚡ Tốc độ: 1x</button>
+      <button class="icon-btn" onclick="changeFontSize(0.08)">A+</button>
+      <button class="icon-btn" onclick="changeFontSize(-0.08)">A-</button>
       <button class="icon-btn" onclick="showHelpModal()">❓ Hướng dẫn</button>
       <button class="icon-btn" onclick="goHomeModal()">🏡 Trang chủ</button>
       <button class="icon-btn" id="btn-exit-vr" style="display:none;background:#c62828;" onclick="exitVRMode()">🚪 Thoát VR</button>
     </div>
   </div>
 
-  <!-- ĐỒNG HỒ ĐẾM THỜI GIAN SỬ DỤNG MÁY TÍNH (KHU VỰC 5) -->
+  <!-- BẢNG KHUYẾN CÁO ÁNH SÁNG KHI BẤM NÚT ĐÈN -->
+  <div id="light-advisory-banner">
+    💡 <b>KHUYẾN CÁO SỨC KHỎE:</b> Khi làm việc với máy tính, các em cần ngồi trong môi trường <b>đủ ánh sáng</b> và <b>hạn chế ánh sáng chiếu trực tiếp</b> vào màn hình hoặc chiếu thẳng vào mắt để tránh chói lóa, bảo vệ đôi mắt!
+  </div>
+
+  <!-- ĐỒNG HỒ SỬ DỤNG MÁY TÍNH -->
   <div id="timer-widget">
-    <div id="timer-label">⏰ THỜI GIAN SỬ DỤNG</div>
+    <div id="timer-label">⏰ THỜI GIAN DÙNG MÁY</div>
     <div id="timer-display">00:00</div>
     <div>
       <button class="mini-btn" id="btn-timer-start" onclick="toggleUsageTimer()">▶ BẮT ĐẦU</button>
-      <button class="mini-btn" style="background:#ef6c00" onclick="fastForward30Min()" title="Mô phỏng đạt mốc 30 phút">⏩ 30 phút</button>
+      <button class="mini-btn" style="background:#ef6c00" onclick="fastForward30Min()">⏩ 30 phút</button>
     </div>
   </div>
 
-  <!-- TRỢ GIẢNG TIN HỌC (YÊU CẦU 15) -->
+  <!-- THẦY GIÁO TIN HỌC NGƯỜI ĐÀ NẴNG -->
   <div id="assistant-box">
-    <div class="avatar-circle" onclick="toggleAssistant()" title="Bật/Tắt lời hướng dẫn">👩‍🏫</div>
+    <div class="avatar-circle" onclick="toggleAssistant()" title="Bật/Tắt hộp thoại của Thầy">👨‍🏫</div>
     <div class="speech-bubble" id="assistant-bubble">
       <div class="speech-name">
-        <span>Cô Trợ giảng Tin học</span>
-        <span style="cursor:pointer;color:#94a3b8" onclick="toggleAssistant()">✖</span>
+        <span>👨‍🏫 Thầy Giáo Tin Học (Đà Nẵng)</span>
+        <div>
+          <button class="speak-again-btn" onclick="speakCurrentText()">🔊 Nghe lại</button>
+          <span style="cursor:pointer;color:#94a3b8;margin-left:4px;" onclick="toggleAssistant()">✖</span>
+        </div>
       </div>
-      <div id="assistant-text">Chào em! Hãy xoay 360° khám phá phòng máy hoặc chọn các mục phía trên để thực hành nhé!</div>
+      <div id="assistant-text">Chào các em nghe! Hôm ni thầy trò mình cùng khám phá cách ngồi máy tính thẳng lưng, đủ ánh sáng và giữ đôi mắt sáng khỏe nhé!</div>
     </div>
   </div>
 
   <!-- TÂM NGẮM VR -->
   <div id="vr-reticle"></div>
 
-  <!-- BẢNG TƯƠNG TÁC CHÍNH PHÍA DƯỚI -->
+  <!-- BẢNG ĐIỀU KHIỂN TƯƠNG TÁC PHÍA DƯỚI -->
   <div id="bottom-panel">
     <div id="panel-title">KHÔNG GIAN PHÒNG TIN HỌC 360°</div>
-    <div id="feedback-banner">✨ Nhấp chuột vào các biểu tượng phát sáng trong phòng hoặc chọn bài học phía trên!</div>
+    <div id="feedback-banner">✨ Nhấp chuột vào các biểu tượng trong phòng hoặc chọn hoạt động phía trên nghe!</div>
     <div id="interactive-controls"></div>
   </div>
 
-  <!-- MODAL NHẮC NHỞ NGHỈ NGƠI SAU 30 PHÚT (KHU VỰC 5) -->
+  <!-- MODAL NHẮC NHỞ NGHỈ NGƠI SAU 30 PHÚT -->
   <div class="overlay-modal" id="rest-modal">
     <div class="modal-card">
-      <h2 style="font-size:1.8rem;margin:0 0 8px;color:#15803d;">🌿 ĐẾN GIỜ NGHỈ RỒI!</h2>
-      <p style="font-size:1.1rem;font-weight:600;margin-bottom:12px;">
-        Đã hết 30 phút làm việc với máy tính! Em hãy rời mắt khỏi màn hình, đứng dậy và thư giãn nhé.
+      <h2 style="font-size:1.75rem;margin:0 0 8px;color:#15803d;">🌿 ĐẾN GIỜ NGHỈ NGƠI RỒI CÁC EM ƠI!</h2>
+      <p style="font-size:1.05rem;font-weight:600;margin-bottom:10px;">
+        Mình đã dùng máy tính 30 phút rồi đó! Các em hãy rời mắt khỏi màn hình, đứng dậy vận động và thư giãn mắt nghe.
       </p>
-      <div id="rest-countdown" style="font-size:1.3rem;font-weight:900;color:#d97706;margin-bottom:10px;">
-        Thời gian vận động thư giãn: 20 giây
+      <div id="rest-countdown" style="font-size:1.25rem;font-weight:900;color:#d97706;margin-bottom:10px;">
+        Thời gian thư giãn: 20 giây
       </div>
       <div class="relax-grid">
         <button class="relax-btn" onclick="doRelaxAction('window')">👀 Nhìn ra xa</button>
@@ -275,21 +302,22 @@
         <button class="relax-btn" onclick="doRelaxAction('walk')">🚶 Đi lại nhẹ nhàng</button>
         <button class="relax-btn" onclick="doRelaxAction('water')">💧 Uống nước</button>
       </div>
-      <p id="relax-status" style="font-weight:700;color:#0288d1;min-height:24px;">Hãy chọn một hoạt động thư giãn bên trên!</p>
-      <button class="big-btn btn-green" style="width:100%;margin-top:10px;" onclick="finishRest()">✓ EM ĐÃ NGHỈ XONG</button>
+      <p id="relax-status" style="font-weight:700;color:#0288d1;min-height:24px;">Hãy chọn một hoạt động thư giãn bên trên nghe!</p>
+      <button class="big-btn btn-green" style="width:100%;margin-top:8px;" onclick="finishRest()">✓ EM ĐÃ NGHỈ XONG</button>
     </div>
   </div>
 
-  <!-- MODAL HƯỚNG DẪN SỬ DỤNG -->
+  <!-- MODAL HƯỚNG DẪN -->
   <div class="overlay-modal" id="help-modal">
     <div class="modal-card" style="background:#fff;border-color:#0288d1;color:#1e293b;">
-      <h2 style="color:#0277bd;margin-top:0;">📘 HƯỚNG DẪN SỬ DỤNG PHÒNG VR 360°</h2>
-      <ul style="text-align:left;line-height:1.7;font-weight:600;">
-        <li>🖱 <b>Trên máy tính:</b> Nhấn giữ và kéo chuột để xoay 360° quanh phòng. Dùng phím mũi tên hoặc WASD để xoay góc nhìn. Nhấp chuột vào các điểm Hotspot và nút bấm.</li>
-        <li>📱 <b>Trên điện thoại / máy tính bảng:</b> Chạm và vuốt màn hình để quan sát 360°, hoặc bấm nút <b>"📱 Cảm biến xoay"</b> để xoay điện thoại nhìn quanh phòng.</li>
-        <li>🥽 <b>Trên kính VR:</b> Nhấn nút <b>"🥽 VÀO CHẾ ĐỘ VR"</b>, hướng tâm ngắm vào các bảng chọn trong 1.5 giây để tự động kích hoạt.</li>
+      <h2 style="color:#0277bd;margin-top:0;">📘 HƯỚNG DẪN DÀNH CHO HỌC SINH LỚP 1, 2, 3, 4, 5</h2>
+      <ul style="text-align:left;line-height:1.65;font-weight:600;">
+        <li>👨‍🏫 <b>Giọng đọc Thầy giáo Đà Nẵng:</b> Hệ thống tự động đọc lời hướng dẫn ấm áp giúp các em Lớp 1, Lớp 2 dễ dàng nghe và làm theo.</li>
+        <li>🖱 <b>Trên máy tính:</b> Nhấn giữ chuột và kéo để xoay 360° quanh phòng học. Bấm vào các nút màu sắc để tương tác.</li>
+        <li>🟢 <b>Trò chơi Điểm tròn thư giãn mắt:</b> Nhìn theo quả cầu tròn màu xanh di chuyển và nhấp vào điểm tròn để tập thể dục cho đôi mắt.</li>
+        <li>💡 <b>Bật/Tắt đèn:</b> Thực hành điều chỉnh ánh sáng vừa đủ và không để ánh sáng chiếu trực tiếp gây chói màn hình.</li>
       </ul>
-      <button class="ctrl-btn good" style="width:100%;padding:12px;font-size:1rem;" onclick="closeHelpModal()">ĐÃ HIỂU</button>
+      <button class="ctrl-btn good" style="width:100%;padding:12px;font-size:1rem;" onclick="closeHelpModal()">ĐÃ HIỂU RỒI THẦY ƠI!</button>
     </div>
   </div>
 
@@ -298,29 +326,32 @@
 
   <script>
     /*************************************************************************
-     * 1. HỆ THỐNG ÂM THANH WEB AUDIO API (KHÔNG CẦN FILE MP3 BÊN NGOÀI)
+     * 1. HỆ THỐNG GIỌNG NÓI THẦY GIÁO NAM ĐÀ NẴNG & HIỆU ỨNG ÂM THANH
      *************************************************************************/
-    class EduAudio {
+    class TeacherVoiceAndAudio {
       constructor() {
-        this.enabled = true;
+        this.soundEnabled = true;
+        this.voiceEnabled = true;
         this.ctx = null;
+        this.lastText = "Chào các em nghe! Hôm ni thầy trò mình cùng khám phá cách ngồi máy tính thẳng lưng, đủ ánh sáng và giữ đôi mắt sáng khỏe nhé!";
       }
-      init() {
+      initAudio() {
         if (!this.ctx) {
           const AudioCtx = window.AudioContext || window.webkitAudioContext;
-          this.ctx = new AudioCtx();
+          if (AudioCtx) this.ctx = new AudioCtx();
         }
-        if (this.ctx.state === 'suspended') this.ctx.resume();
+        if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
       }
       playTone(freq, duration = 0.12, type = 'sine', delay = 0) {
-        if (!this.enabled) return;
-        this.init();
+        if (!this.soundEnabled) return;
+        this.initAudio();
+        if (!this.ctx) return;
         setTimeout(() => {
           const osc = this.ctx.createOscillator();
           const gain = this.ctx.createGain();
           osc.type = type;
           osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-          gain.gain.setValueAtTime(0.18, this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.16, this.ctx.currentTime);
           gain.gain.exponentialRampToValueAtTime(0.005, this.ctx.currentTime + duration);
           osc.connect(gain);
           gain.connect(this.ctx.destination);
@@ -328,41 +359,63 @@
           osc.stop(this.ctx.currentTime + duration);
         }, delay);
       }
-      click() { this.playTone(700, 0.05, 'sine'); }
-      switchLight() { this.playTone(450, 0.06, 'triangle'); }
+      click() { this.playTone(680, 0.05, 'sine'); }
+      lightSwitch() { this.playTone(420, 0.07, 'triangle'); }
       correct() {
-        this.playTone(523.25, 0.12, 'triangle', 0);
-        this.playTone(659.25, 0.12, 'triangle', 110);
-        this.playTone(783.99, 0.22, 'triangle', 220);
+        this.playTone(523.25, 0.11, 'triangle', 0);
+        this.playTone(659.25, 0.11, 'triangle', 100);
+        this.playTone(783.99, 0.22, 'triangle', 200);
       }
       wrong() {
-        this.playTone(300, 0.15, 'sawtooth', 0);
-        this.playTone(240, 0.22, 'sawtooth', 140);
+        this.playTone(290, 0.14, 'sawtooth', 0);
+        this.playTone(230, 0.2, 'sawtooth', 130);
       }
       fanfare() {
-        [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.playTone(f, 0.2, 'triangle', i * 130));
+        [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => this.playTone(f, 0.2, 'triangle', i * 125));
       }
-      alarmRest() {
-        [440, 554.37, 659.25, 554.37, 440].forEach((f, i) => this.playTone(f, 0.18, 'sine', i * 160));
+      // Phát giọng đọc Thầy giáo Nam ấm áp (Web Speech API)
+      speak(text) {
+        this.lastText = text;
+        if (!this.voiceEnabled || !('speechSynthesis' in window)) return;
+        try {
+          window.speechSynthesis.cancel();
+          const cleanText = text.replace(/[✓✗⚠🎉🏆💡🪑👀⏰🖱🟢🔵🟠🟣🌿🙆🚶💧]/g, '');
+          const utter = new SpeechSynthesisUtterance(cleanText);
+          utter.lang = 'vi-VN';
+          // Tinh chỉnh pitch trầm ấm của giọng nam miền Trung / Đà Nẵng, tốc độ rõ ràng cho HS lớp 1-2
+          utter.pitch = 0.82;
+          utter.rate = 0.96;
+
+          const voices = window.speechSynthesis.getVoices();
+          const viVoices = voices.filter(v => v.lang.toLowerCase().includes('vi'));
+          if (viVoices.length > 0) {
+            // Ưu tiên giọng Nam nếu thiết bị có cài đặt (NamMinh, Male, Google Tiếng Việt)
+            const maleVoice = viVoices.find(v => /nam|male|minh|an/i.test(v.name));
+            utter.voice = maleVoice || viVoices[0];
+          }
+          window.speechSynthesis.speak(utter);
+        } catch (e) {
+          console.warn('Speech synthesis warning:', e);
+        }
       }
     }
-    const sfx = new EduAudio();
+    const sfx = new TeacherVoiceAndAudio();
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+    }
 
     /*************************************************************************
-     * 2. BIẾN TRẠNG THÁI TOÀN CỤC & LƯU TRỮ LOCALSTORAGE
+     * 2. TRẠNG THÁI ỨNG DỤNG & LƯU TRỮ LOCALSTORAGE
      *************************************************************************/
     const state = {
       mode: 'explore',
-      animSpeed: 1,
       assistantVisible: true,
       vrActive: false,
-      gyroActive: false,
       distanceCm: 65,
-      postureType: 'good', // good, A, B, C, D
+      postureType: 'good',
       ceilingLightOn: true,
       windowBlindsOpen: true,
       directGlare: false,
-      dimRoom: false,
       timerSeconds: 0,
       timerRunning: false,
       restCountdown: 20,
@@ -370,47 +423,49 @@
       quizIndex: 0,
       mouseGameScore: 0,
       mouseTargetPart: 'left',
-      badges: JSON.parse(localStorage.getItem('bai4_vr_badges')) || {
+      eyeGamePattern: 'infinity', // infinity (vô cực), circle (tròn), cross (4 hướng)
+      eyeGameScore: 0,
+      eyeBallSpeed: 1.0,
+      badges: JSON.parse(localStorage.getItem('vr_tinhoc_badges_v2')) || {
         posture: false,
         distance: false,
         lighting: false,
-        lightSwitch: false,
+        eyeRelaxGame: false,
         rest: false,
         mouse: false
       }
     };
 
     function saveBadges() {
-      localStorage.setItem('bai4_vr_badges', JSON.stringify(state.badges));
+      localStorage.setItem('vr_tinhoc_badges_v2', JSON.stringify(state.badges));
     }
 
     /*************************************************************************
-     * 3. KHỞI TẠO KHÔNG GIAN 3D THREE.JS & PHÒNG HỌC TIN HỌC VIỆT NAM
+     * 3. KHỞI TẠO KHÔNG GIAN 3D THREE.JS & HÀM VẼ CANVAS TƯƠNG THÍCH 100%
      *************************************************************************/
     const container = document.getElementById('canvas-container');
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(0x87CEEB);
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 100);
-    camera.position.set(0, 1.65, 2.3);
+    camera.position.set(0, 1.62, 2.25);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.xr.enabled = true;
     container.appendChild(renderer.domElement);
 
-    // Góc nhìn 360° bằng Chuột / Cảm ứng / Bàn phím
     let lon = -90, lat = -8;
     let isPointerDown = false, startX = 0, startY = 0, startLon = 0, startLat = 0;
-    let cameraTargetPos = new THREE.Vector3(0, 1.65, 2.3);
-    let cameraLookOverride = null; // Dùng khi chuyển camera đến gần chuột 3D hoặc cửa sổ
+    let cameraTargetPos = new THREE.Vector3(0, 1.62, 2.25);
+    let cameraLookOverride = null;
 
-    // Ánh sáng trong phòng học
+    // Ánh sáng phòng máy
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.65);
     scene.add(ambientLight);
 
-    const ceilingPointLight = new THREE.PointLight(0xfff8e1, 0.85, 18);
+    const ceilingPointLight = new THREE.PointLight(0xfffbeb, 0.88, 18);
     ceilingPointLight.position.set(0, 3.6, 0);
     scene.add(ceilingPointLight);
 
@@ -418,20 +473,31 @@
     sunDirLight.position.set(-6, 4, -2);
     scene.add(sunDirLight);
 
-    // Nhóm đối tượng tương tác Raycaster
     const interactables = [];
     const hotspotSprites = [];
-    const vrMenuButtons = [];
 
-    // Hàm tiện ích tạo nhãn chữ Tiếng Việt chuẩn sắc nét bằng Canvas 2D
-    function createTextSprite(text, bgColor = '#0288d1', textColor = '#ffffff', width = 320, height = 80, fontSize = 28) {
+    // Hàm vẽ hình chữ nhật bo góc tương thích mọi trình duyệt cũ & mới
+    function drawRoundedRect(ctx, x, y, width, height, radius) {
+      ctx.beginPath();
+      ctx.moveTo(x + radius, y);
+      ctx.lineTo(x + width - radius, y);
+      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+      ctx.lineTo(x + width, y + height - radius);
+      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+      ctx.lineTo(x + radius, y + height);
+      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+      ctx.lineTo(x, y + radius);
+      ctx.quadraticCurveTo(x, y, x + radius, y);
+      ctx.closePath();
+    }
+
+    function createTextSprite(text, bgColor = '#0288d1', textColor = '#ffffff', width = 340, height = 80, fontSize = 26) {
       const canvas = document.createElement('canvas');
       canvas.width = width;
       canvas.height = height;
       const ctx = canvas.getContext('2d');
       ctx.fillStyle = bgColor;
-      ctx.beginPath();
-      ctx.roundRect(4, 4, width - 8, height - 8, 18);
+      drawRoundedRect(ctx, 4, 4, width - 8, height - 8, 18);
       ctx.fill();
       ctx.lineWidth = 4;
       ctx.strokeStyle = '#ffffff';
@@ -450,13 +516,13 @@
       return sprite;
     }
 
-    // XÂY DỰNG KIẾN TRÚC PHÒNG HỌC TIN HỌC
+    /*************************************************************************
+     * 4. DỰNG PHÒNG HỌC TIN HỌC TIỂU HỌC VIỆT NAM (KHÔNG GHI CHỮ BÀI 4)
+     *************************************************************************/
     const roomGroup = new THREE.Group();
     scene.add(roomGroup);
 
-    // Sàn gạch sáng & Tường lớp học
-    const floorMat = new THREE.MeshLambertMaterial({ color: 0xe2e8f0 });
-    const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 10), floorMat);
+    const floor = new THREE.Mesh(new THREE.PlaneGeometry(12, 10), new THREE.MeshLambertMaterial({ color: 0xe2e8f0 }));
     floor.rotation.x = -Math.PI / 2;
     roomGroup.add(floor);
 
@@ -475,7 +541,6 @@
     rightWall.rotation.y = -Math.PI / 2;
     roomGroup.add(rightWall);
 
-    // Tường trái có khung cửa sổ nhìn ra sân trường
     const leftWallTop = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.0, 9), wallMat);
     leftWallTop.position.set(-6, 3.7, 0);
     roomGroup.add(leftWallTop);
@@ -483,49 +548,43 @@
     leftWallBot.position.set(-6, 0.55, 0);
     roomGroup.add(leftWallBot);
 
-    // Rèm cửa sổ (Đóng/Mở trong Khu vực Ánh sáng)
-    const blindMat = new THREE.MeshLambertMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.85 });
-    const windowBlind = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.1, 4.2), blindMat);
+    const windowBlind = new THREE.Mesh(
+      new THREE.BoxGeometry(0.12, 2.1, 4.2),
+      new THREE.MeshLambertMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.85 })
+    );
     windowBlind.position.set(-5.9, 2.15, -0.5);
-    windowBlind.visible = false; // Mặc định mở rèm đón ánh sáng tự nhiên
+    windowBlind.visible = false;
     roomGroup.add(windowBlind);
 
-    // Trần nhà và Đèn trần phát sáng
     const ceiling = new THREE.Mesh(new THREE.PlaneGeometry(12, 9), new THREE.MeshBasicMaterial({ color: 0xf8fafc }));
     ceiling.position.set(0, 4.2, 0);
     ceiling.rotation.x = Math.PI / 2;
     roomGroup.add(ceiling);
 
     const lampBulbMat = new THREE.MeshBasicMaterial({ color: 0xfffbeb });
-    const ceilingLamp = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.08, 24), lampBulbMat);
+    const ceilingLamp = new THREE.Mesh(new THREE.CylinderGeometry(0.65, 0.65, 0.08, 24), lampBulbMat);
     ceilingLamp.position.set(0, 4.14, 0);
     roomGroup.add(ceilingLamp);
 
-    // Bảng lớp học xanh ("BÀI 4: LÀM VIỆC VỚI MÁY TÍNH")
+    // Bảng lớp học dùng chung cho các khối lớp 1, 2, 3, 4, 5
     const boardGroup = new THREE.Group();
-    const greenBoard = new THREE.Mesh(new THREE.BoxGeometry(4.4, 1.5, 0.08), new THREE.MeshLambertMaterial({ color: 0x14532d }));
+    const greenBoard = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.5, 0.08), new THREE.MeshLambertMaterial({ color: 0x14532d }));
     boardGroup.add(greenBoard);
-    const boardTitle = createTextSprite('BÀI 4: LÀM VIỆC VỚI MÁY TÍNH', '#14532d', '#fef08a', 600, 90, 32);
+    const boardTitle = createTextSprite('VUI HỌC TIN HỌC – EM SỬ DỤNG MÁY TÍNH AN TOÀN', '#14532d', '#fef08a', 680, 90, 27);
     boardTitle.position.set(0, 0.25, 0.08);
     boardGroup.add(boardTitle);
-    const boardSub = createTextSprite('Ngồi đúng tư thế - Giữ khoảng cách 50-80 cm - Bảo vệ mắt', '#14532d', '#ffffff', 640, 75, 22);
+    const boardSub = createTextSprite('Ngồi thẳng lưng • Mắt cách 50-80 cm • Đủ ánh sáng • Nghỉ ngơi hợp lý', '#14532d', '#ffffff', 680, 75, 21);
     boardSub.position.set(0, -0.25, 0.08);
     boardGroup.add(boardSub);
     boardGroup.position.set(0, 2.4, -4.42);
     roomGroup.add(boardGroup);
 
-    // Đồng hồ treo tường
-    const clockGroup = new THREE.Group();
+    // Đồng hồ, Giá sách & Cây xanh
     const clockFace = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.05, 24), new THREE.MeshLambertMaterial({ color: 0xffffff }));
     clockFace.rotation.x = Math.PI / 2;
-    clockGroup.add(clockFace);
-    const clockHand1 = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.22, 0.02), new THREE.MeshBasicMaterial({ color: 0xef4444 }));
-    clockHand1.position.set(0, 0.08, 0.04);
-    clockGroup.add(clockHand1);
-    clockGroup.position.set(3.2, 3.1, -4.42);
-    roomGroup.add(clockGroup);
+    clockFace.position.set(3.3, 3.1, -4.42);
+    roomGroup.add(clockFace);
 
-    // Giá sách và Cây xanh góc phòng
     const shelf = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.2, 0.45), new THREE.MeshLambertMaterial({ color: 0x8d6e63 }));
     shelf.position.set(4.8, 1.1, -3.9);
     roomGroup.add(shelf);
@@ -543,7 +602,7 @@
     createPlant(-4.8, -3.8);
     createPlant(4.8, 2.8);
 
-    // KHUNG CẢNH BÊN NGOÀI CỬA SỔ (BẦU TRỜI, MÂY, CHIM BAY, CÂY XANH, SÂN TRƯỜNG)
+    // Khung cảnh ngoài cửa sổ
     const outdoorGroup = new THREE.Group();
     scene.add(outdoorGroup);
     const schoolYard = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshLambertMaterial({ color: 0x86efac }));
@@ -581,12 +640,11 @@
     }
 
     /*************************************************************************
-     * 4. BÀN HỌC SINH, MÁY TÍNH & MÔ HÌNH HỌC SINH TIỂU HỌC VIỆT NAM (KHU VỰC 1 & 2)
+     * 5. BÀN MÁY TÍNH, ĐIỂM TRÒN LUYỆN MẮT & MÔ HÌNH CẬU BÉ HỌC SINH CHÂN THẬT
      *************************************************************************/
     const mainDeskGroup = new THREE.Group();
     scene.add(mainDeskGroup);
 
-    // Mặt bàn và chân bàn
     const deskTop = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.06, 0.85), new THREE.MeshLambertMaterial({ color: 0xd97706 }));
     deskTop.position.set(0, 0.75, -0.7);
     mainDeskGroup.add(deskTop);
@@ -597,21 +655,19 @@
       mainDeskGroup.add(leg);
     });
 
-    // Thùng máy (Case), Màn hình, Bàn phím, Chuột trên bàn
     const pcCase = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.48, 0.45), new THREE.MeshLambertMaterial({ color: 0x334155 }));
     pcCase.position.set(-0.58, 1.02, -0.72);
     mainDeskGroup.add(pcCase);
 
     const monitorGroup = new THREE.Group();
-    const monitorFrame = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.48, 0.04), new THREE.MeshLambertMaterial({ color: 0x1e293b }));
+    const monitorFrame = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.52, 0.04), new THREE.MeshLambertMaterial({ color: 0x1e293b }));
     const screenMat = new THREE.MeshBasicMaterial({ color: 0x0288d1 });
-    const monitorScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.7, 0.42), screenMat);
+    const monitorScreen = new THREE.Mesh(new THREE.PlaneGeometry(0.76, 0.46), screenMat);
     monitorScreen.position.z = 0.022;
 
-    // Vệt lóa sáng phản chiếu khi ánh sáng chiếu trực tiếp vào màn hình (Khu vực 8)
     const glareMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.0 });
     const screenGlare = new THREE.Mesh(new THREE.CircleGeometry(0.22, 24), glareMat);
-    screenGlare.position.set(-0.1, 0.05, 0.025);
+    screenGlare.position.set(-0.1, 0.05, 0.026);
 
     const monitorStand = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, 0.16, 12), new THREE.MeshLambertMaterial({ color: 0x475569 }));
     monitorStand.position.y = -0.3;
@@ -627,92 +683,230 @@
     smallMouse.position.set(0.35, 0.79, -0.52);
     mainDeskGroup.add(smallMouse);
 
-    // HÀM TẠO NHÂN VẬT HỌC SINH TIỂU HỌC VIỆT NAM (CÓ KHỚP CỘT SỐNG, ĐẦU, TAY, CHÂN)
-    function createStudentRig() {
+    // QUẢ CẦU ĐIỂM TRÒN THƯ GIÃN MẮT (DI CHUYỂN TRƯỚC MÀN HÌNH)
+    const eyeBallGroup = new THREE.Group();
+    const eyeBallMesh = new THREE.Mesh(
+      new THREE.SphereGeometry(0.055, 24, 24),
+      new THREE.MeshBasicMaterial({ color: 0x00e676 })
+    );
+    const eyeBallHalo = new THREE.Mesh(
+      new THREE.RingGeometry(0.065, 0.09, 24),
+      new THREE.MeshBasicMaterial({ color: 0xfef08a, side: THREE.DoubleSide })
+    );
+    eyeBallMesh.userData = { type: 'eyeBallTarget' };
+    interactables.push(eyeBallMesh);
+    eyeBallGroup.add(eyeBallMesh, eyeBallHalo);
+    eyeBallGroup.position.set(0, 1.12, -0.82);
+    eyeBallGroup.visible = false;
+    scene.add(eyeBallGroup);
+
+    // MÔ HÌNH CẬU BÉ HỌC SINH TIỂU HỌC VIỆT NAM CHÂN THẬT, CHI TIẾT KHỚP CƠ THỂ
+    function createRealisticStudentBoy() {
       const root = new THREE.Group();
 
-      // Ghế ngồi
+      // Ghế ngồi công thái học có đệm và tựa lưng
       const seat = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.05, 0.44), new THREE.MeshLambertMaterial({ color: 0x0288d1 }));
-      seat.position.set(0, 0.45, 0);
-      const backRest = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.5, 0.05), new THREE.MeshLambertMaterial({ color: 0x0288d1 }));
-      backRest.position.set(0, 0.72, 0.2);
-      const chairLeg = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.45, 12), new THREE.MeshLambertMaterial({ color: 0x475569 }));
-      chairLeg.position.set(0, 0.225, 0);
-      root.add(seat, backRest, chairLeg);
+      seat.position.set(0, 0.44, 0);
+      const backRest = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.48, 0.05), new THREE.MeshLambertMaterial({ color: 0x0288d1 }));
+      backRest.position.set(0, 0.71, 0.2);
+      const chairPillar = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.44, 14), new THREE.MeshLambertMaterial({ color: 0x475569 }));
+      chairPillar.position.set(0, 0.22, 0);
+      const chairBase = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.03, 16), new THREE.MeshLambertMaterial({ color: 0x334155 }));
+      chairBase.position.set(0, 0.015, 0);
+      root.add(seat, backRest, chairPillar, chairBase);
 
-      // Nhóm cơ thể học sinh (để có thể đứng dậy khi nghỉ ngơi)
       const bodyGroup = new THREE.Group();
       root.add(bodyGroup);
 
-      // Chân trái & phải
-      const legMat = new THREE.MeshLambertMaterial({ color: 0x1e3a8a });
-      const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.44, 0.11), legMat);
-      leftLeg.position.set(-0.11, 0.24, -0.14);
-      const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.44, 0.11), legMat);
-      rightLeg.position.set(0.11, 0.24, -0.14);
-      bodyGroup.add(leftLeg, rightLeg);
+      const skinMat = new THREE.MeshLambertMaterial({ color: 0xffd1b3 });
+      const pantsMat = new THREE.MeshLambertMaterial({ color: 0x1e3a8a });
+      const shirtMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
+      const shoeMat = new THREE.MeshLambertMaterial({ color: 0x0f172a });
 
-      // Khớp cột sống & thân áo trắng đồng phục + khăn quàng đỏ
+      // Hông & Quần đồng phục xanh tím than
+      const pelvis = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.13, 0.12, 16), pantsMat);
+      pelvis.position.set(0, 0.49, 0.02);
+      bodyGroup.add(pelvis);
+
+      // Tạo hai chân có khớp Đùi - Đầu gối - Bắp chân - Giày
+      function createArticulatedLeg(isLeft) {
+        const xDir = isLeft ? -0.095 : 0.095;
+        const hipJoint = new THREE.Group();
+        hipJoint.position.set(xDir, 0.48, 0.02);
+
+        // Đùi nằm ngang trên mặt ghế
+        const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.058, 0.05, 0.26, 14), pantsMat);
+        thigh.rotation.x = Math.PI / 2;
+        thigh.position.set(0, 0, -0.12);
+        hipJoint.add(thigh);
+
+        // Khớp gối
+        const kneeJoint = new THREE.Group();
+        kneeJoint.position.set(0, 0, -0.24);
+        hipJoint.add(kneeJoint);
+
+        const kneeSphere = new THREE.Mesh(new THREE.SphereGeometry(0.048, 12, 12), skinMat);
+        kneeJoint.add(kneeSphere);
+
+        // Bắp chân thả vuông góc xuống sàn
+        const calf = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.036, 0.38, 14), skinMat);
+        calf.position.set(0, -0.20, 0);
+        kneeJoint.add(calf);
+
+        // Tất trắng & Giày học sinh
+        const sock = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.09, 12), shirtMat);
+        sock.position.set(0, -0.37, 0);
+        const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.095, 0.06, 0.18), shoeMat);
+        shoe.position.set(0, -0.43, -0.03);
+        kneeJoint.add(sock, shoe);
+
+        return { hipJoint, kneeJoint };
+      }
+
+      const leftLegRig = createArticulatedLeg(true);
+      const rightLegRig = createArticulatedLeg(false);
+      bodyGroup.add(leftLegRig.hipJoint, rightLegRig.hipJoint);
+
+      // KHỚP CỘT SỐNG & THÂN ÁO TRẮNG HỌC SINH
       const spinePivot = new THREE.Group();
-      spinePivot.position.set(0, 0.48, 0);
+      spinePivot.position.set(0, 0.52, 0.02);
       bodyGroup.add(spinePivot);
 
-      const torsoMat = new THREE.MeshLambertMaterial({ color: 0xffffff });
-      const torso = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.48, 0.2), torsoMat);
-      torso.position.set(0, 0.24, 0);
+      const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.155, 0.135, 0.44, 18), shirtMat);
+      torso.scale.set(1.15, 1, 0.78);
+      torso.position.set(0, 0.22, 0);
       spinePivot.add(torso);
 
-      // Khăn quàng đỏ Đội viên Việt Nam
-      const scarf = new THREE.Mesh(new THREE.ConeGeometry(0.19, 0.22, 4), new THREE.MeshLambertMaterial({ color: 0xdc2626 }));
-      scarf.rotation.x = Math.PI;
-      scarf.position.set(0, 0.42, -0.06);
-      spinePivot.add(scarf);
+      // Cổ áo & Khăn quàng đỏ Đội viên
+      const collar = new THREE.Mesh(new THREE.TorusGeometry(0.095, 0.022, 10, 20), new THREE.MeshLambertMaterial({ color: 0xeef2ff }));
+      collar.rotation.x = Math.PI / 2;
+      collar.position.set(0, 0.43, 0);
+      spinePivot.add(collar);
 
-      // Hai cánh tay
-      const armMat = new THREE.MeshLambertMaterial({ color: 0xfde047 });
-      const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.36, 0.08), armMat);
-      leftArm.position.set(-0.22, 0.32, -0.12);
-      leftArm.rotation.x = 0.55;
-      const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.36, 0.08), armMat);
-      rightArm.position.set(0.22, 0.32, -0.12);
-      rightArm.rotation.x = 0.55;
+      const redScarf = new THREE.Mesh(new THREE.ConeGeometry(0.17, 0.24, 4), new THREE.MeshLambertMaterial({ color: 0xdc2626 }));
+      redScarf.rotation.x = Math.PI;
+      redScarf.position.set(0, 0.36, -0.08);
+      const scarfKnot = new THREE.Mesh(new THREE.SphereGeometry(0.032, 10, 10), new THREE.MeshLambertMaterial({ color: 0xb91c1c }));
+      scarfKnot.position.set(0, 0.38, -0.12);
+      spinePivot.add(redScarf, scarfKnot);
+
+      // Tạo hai cánh tay có khớp Vai - Khuỷu tay - Cẳng tay - Bàn tay đặt lên bàn phím
+      function createArticulatedArm(isLeft) {
+        const xSide = isLeft ? -0.19 : 0.19;
+        const shoulderJoint = new THREE.Group();
+        shoulderJoint.position.set(xSide, 0.39, 0);
+
+        const sleeve = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.044, 0.13, 12), shirtMat);
+        sleeve.position.set(0, -0.05, 0);
+        const upperArm = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.034, 0.22, 12), skinMat);
+        upperArm.position.set(0, -0.11, 0);
+        shoulderJoint.add(sleeve, upperArm);
+
+        // Cẳng tay vươn ra bàn phím
+        const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.03, 0.24, 12), skinMat);
+        forearm.rotation.x = Math.PI / 2.2;
+        forearm.position.set(0, -0.21, -0.11);
+        const hand = new THREE.Mesh(new THREE.SphereGeometry(0.038, 12, 12), skinMat);
+        hand.scale.set(1, 0.6, 1.3);
+        hand.position.set(0, -0.22, -0.23);
+        shoulderJoint.add(forearm, hand);
+
+        return shoulderJoint;
+      }
+
+      const leftArm = createArticulatedArm(true);
+      const rightArm = createArticulatedArm(false);
       spinePivot.add(leftArm, rightArm);
 
-      // Đầu, Tóc và Đôi mắt
+      // CỔ VÀ KHUÔN MẶT CẬU BÉ CHÂN THẬT, ĐÁNG YÊU
       const headPivot = new THREE.Group();
-      headPivot.position.set(0, 0.58, 0);
+      headPivot.position.set(0, 0.49, 0);
       spinePivot.add(headPivot);
 
-      const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.14, 20, 20), new THREE.MeshLambertMaterial({ color: 0xfed7aa }));
-      const hairMesh = new THREE.Mesh(new THREE.SphereGeometry(0.148, 20, 12, 0, Math.PI * 2, 0, Math.PI / 1.8), new THREE.MeshLambertMaterial({ color: 0x1e293b }));
-      hairMesh.position.y = 0.02;
-      const eyeL = new THREE.Mesh(new THREE.SphereGeometry(0.02, 8, 8), new THREE.MeshBasicMaterial({ color: 0x0f172a }));
-      eyeL.position.set(-0.045, 0.02, -0.13);
-      const eyeR = eyeL.clone();
-      eyeR.position.x = 0.045;
-      headPivot.add(headMesh, hairMesh, eyeL, eyeR);
+      const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.058, 0.09, 14), skinMat);
+      neck.position.set(0, 0.02, 0);
+      headPivot.add(neck);
 
-      return { root, bodyGroup, spinePivot, headPivot, leftLeg, rightLeg, leftArm, rightArm, torso };
+      const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.145, 24, 24), skinMat);
+      headMesh.scale.set(0.96, 1.04, 0.98);
+      headMesh.position.set(0, 0.13, 0);
+      headPivot.add(headMesh);
+
+      // Đôi tai hai bên
+      const earGeo = new THREE.SphereGeometry(0.032, 12, 12);
+      const earL = new THREE.Mesh(earGeo, skinMat);
+      earL.scale.set(0.5, 1, 0.8);
+      earL.position.set(-0.14, 0.13, 0);
+      const earR = earL.clone();
+      earR.position.x = 0.14;
+      headPivot.add(earL, earR);
+
+      // Mái tóc học sinh gọn gàng
+      const hairMat = new THREE.MeshLambertMaterial({ color: 0x171717 });
+      const hairCap = new THREE.Mesh(
+        new THREE.SphereGeometry(0.152, 24, 16, 0, Math.PI * 2, 0, Math.PI / 1.75),
+        hairMat
+      );
+      hairCap.position.set(0, 0.14, 0.01);
+      hairCap.rotation.x = -0.12;
+      headPivot.add(hairCap);
+
+      // Đôi mắt to tròn có lòng trắng, con ngươi đen và đốm sáng long lanh
+      const eyeGroup = new THREE.Group();
+      const scleraGeo = new THREE.SphereGeometry(0.024, 12, 12);
+      const scleraMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+      const pupilGeo = new THREE.SphereGeometry(0.013, 10, 10);
+      const pupilMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+
+      const eyeWhiteL = new THREE.Mesh(scleraGeo, scleraMat);
+      eyeWhiteL.position.set(-0.048, 0.14, -0.128);
+      const pupilL = new THREE.Mesh(pupilGeo, pupilMat);
+      pupilL.position.set(-0.048, 0.14, -0.142);
+
+      const eyeWhiteR = eyeWhiteL.clone();
+      eyeWhiteR.position.x = 0.048;
+      const pupilR = pupilL.clone();
+      pupilR.position.x = 0.048;
+
+      eyeGroup.add(eyeWhiteL, pupilL, eyeWhiteR, pupilR);
+      headPivot.add(eyeGroup);
+
+      // Mũi nhỏ & Miệng cười tươi
+      const nose = new THREE.Mesh(new THREE.SphereGeometry(0.016, 10, 10), skinMat);
+      nose.position.set(0, 0.115, -0.145);
+      const smile = new THREE.Mesh(
+        new THREE.TorusGeometry(0.028, 0.006, 8, 16, Math.PI),
+        new THREE.MeshBasicMaterial({ color: 0xe11d48 })
+      );
+      smile.rotation.x = Math.PI;
+      smile.position.set(0, 0.085, -0.136);
+      headPivot.add(nose, smile);
+
+      return {
+        root, bodyGroup, spinePivot, headPivot,
+        leftLeg: leftLegRig.kneeJoint, rightLeg: rightLegRig.kneeJoint,
+        leftArm, rightArm, torso, eyeGroup
+      };
     }
 
-    const mainStudent = createStudentRig();
+    const mainStudent = createRealisticStudentBoy();
     mainStudent.root.position.set(0, 0, -0.23);
     scene.add(mainStudent.root);
 
-    // Thước đo tia Laser từ mắt học sinh đến màn hình & Nhãn khoảng cách (Khu vực 1 & 4)
+    // Thước đo khoảng cách từ mắt cậu bé đến màn hình
     const rulerGroup = new THREE.Group();
     const rulerMat = new THREE.MeshBasicMaterial({ color: 0x00e676 });
-    const rulerBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.65, 12), rulerMat);
+    const rulerBeam = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.65, 12), rulerMat);
     rulerBeam.rotation.x = Math.PI / 2;
     rulerGroup.add(rulerBeam);
-    let rulerLabel = createTextSprite('65 cm (An toàn)', '#16a34a', '#ffffff', 280, 70, 26);
+    let rulerLabel = createTextSprite('65 cm (An toàn)', '#16a34a', '#ffffff', 280, 70, 25);
     rulerLabel.position.set(0, 0.16, 0);
     rulerGroup.add(rulerLabel);
-    rulerGroup.position.set(0, 1.08, -0.55);
+    rulerGroup.position.set(0, 1.15, -0.55);
     scene.add(rulerGroup);
 
     /*************************************************************************
-     * 5. KHU VỰC 6: CON CHUỘT MÁY TÍNH 3D LỚN (TRÊN BÀN PHỤ BÊN PHẢI)
+     * 6. MÔ HÌNH CHUỘT 3D LỚN & CÁC ĐIỂM HOTSPOT TRONG PHÒNG
      *************************************************************************/
     const giantMouseGroup = new THREE.Group();
     giantMouseGroup.position.set(2.4, 0.78, -0.7);
@@ -726,28 +920,22 @@
     mouseBody.position.y = 0.09;
     giantMouseGroup.add(mouseBody);
 
-    // Nút trái chuột
-    const leftBtnMat = new THREE.MeshLambertMaterial({ color: 0x38bdf8 });
-    const mouseLeftBtn = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.06, 0.36), leftBtnMat);
+    const mouseLeftBtn = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.06, 0.36), new THREE.MeshLambertMaterial({ color: 0x38bdf8 }));
     mouseLeftBtn.position.set(-0.14, 0.20, -0.20);
-    mouseLeftBtn.userData = { type: 'mousePart', part: 'left', name: 'Nút trái chuột', desc: 'Dùng để chọn đối tượng, nháy chuột và thực hiện một số thao tác.' };
+    mouseLeftBtn.userData = { type: 'mousePart', part: 'left' };
     giantMouseGroup.add(mouseLeftBtn);
     interactables.push(mouseLeftBtn);
 
-    // Nút phải chuột
-    const rightBtnMat = new THREE.MeshLambertMaterial({ color: 0xfbbf24 });
-    const mouseRightBtn = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.06, 0.36), rightBtnMat);
+    const mouseRightBtn = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.06, 0.36), new THREE.MeshLambertMaterial({ color: 0xfbbf24 }));
     mouseRightBtn.position.set(0.14, 0.20, -0.20);
-    mouseRightBtn.userData = { type: 'mousePart', part: 'right', name: 'Nút phải chuột', desc: 'Dùng để mở một số thực đơn lệnh.' };
+    mouseRightBtn.userData = { type: 'mousePart', part: 'right' };
     giantMouseGroup.add(mouseRightBtn);
     interactables.push(mouseRightBtn);
 
-    // Nút cuộn chuột
-    const scrollMat = new THREE.MeshLambertMaterial({ color: 0xf43f5e });
-    const mouseScrollBtn = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.05, 16), scrollMat);
+    const mouseScrollBtn = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.05, 16), new THREE.MeshLambertMaterial({ color: 0xf43f5e }));
     mouseScrollBtn.rotation.z = Math.PI / 2;
     mouseScrollBtn.position.set(0, 0.23, -0.20);
-    mouseScrollBtn.userData = { type: 'mousePart', part: 'scroll', name: 'Nút cuộn chuột', desc: 'Dùng để cuộn trang lên hoặc xuống.' };
+    mouseScrollBtn.userData = { type: 'mousePart', part: 'scroll' };
     giantMouseGroup.add(mouseScrollBtn);
     interactables.push(mouseScrollBtn);
 
@@ -755,58 +943,51 @@
     mouseTitleSprite.position.set(0, 0.65, 0);
     giantMouseGroup.add(mouseTitleSprite);
 
-    /*************************************************************************
-     * 6. BẢNG KIẾN THỨC HOTSPOTS (YÊU CẦU 16) & BẢN ĐỒ VR NỔI (YÊU CẦU 17)
-     *************************************************************************/
     const hotspotData = [
-      { id: 'eyes', label: '👀 MẮT', pos: [0, 1.52, -0.85], msg: '👀 MẮT: Giữ khoảng cách phù hợp với màn hình (từ 50 đến 80 cm).' },
-      { id: 'posture', label: '🪑 TƯ THẾ', pos: [-0.65, 1.15, -0.2], msg: '🪑 TƯ THẾ: Ngồi ngay ngắn, lưng thẳng, vai thả lỏng, chân đặt ổn định.' },
-      { id: 'light', label: '💡 ÁNH SÁNG', pos: [0, 3.45, -0.5], msg: '💡 ÁNH SÁNG: Đảm bảo đủ ánh sáng và tránh ánh sáng chiếu trực tiếp vào màn hình.' },
-      { id: 'rest', label: '⏰ NGHỈ NGƠI', pos: [3.2, 2.5, -4.1], msg: '⏰ NGHỈ NGƠI: Sau một thời gian sử dụng máy tính (khoảng 30 phút), hãy nghỉ ngơi và thư giãn.' },
-      { id: 'mouse', label: '🖱 CHUỘT', pos: [2.4, 1.65, -0.7], msg: '🖱 CHUỘT: Nhận biết nút trái, nút phải và nút cuộn để điều khiển máy tính.' }
+      { id: 'eyes', label: '👀 ĐÔI MẮT', pos: [0, 1.56, -0.85], msg: 'Đôi mắt của em cần giữ khoảng cách từ 50 đến 80 xăng-ti-mét với màn hình máy tính nghe!' },
+      { id: 'posture', label: '🪑 TƯ THẾ NGỒI', pos: [-0.68, 1.18, -0.2], msg: 'Các em nhớ ngồi thẳng lưng, vai thả lỏng tự nhiên và hai bàn chân đặt bằng phẳng trên sàn nhà nhé!' },
+      { id: 'light', label: '💡 ĐÈN & ÁNH SÁNG', pos: [0, 3.45, -0.5], msg: 'Khuyến cáo: Khi ngồi học với máy tính cần môi trường đủ ánh sáng, hạn chế ánh sáng chiếu trực tiếp vào màn hình gây chói mắt!' },
+      { id: 'rest', label: '⏰ NGHỈ NGƠI 30P', pos: [3.3, 2.5, -4.1], msg: 'Sau khoảng 30 phút làm việc với máy tính, các em nhớ đứng dậy vươn vai và tập bài thể dục thư giãn mắt nghe!' },
+      { id: 'mouse', label: '🖱 CHUỘT MÁY TÍNH', pos: [2.4, 1.65, -0.7], msg: 'Chuột máy tính có nút trái, nút phải và nút cuộn ở giữa giúp em điều khiển máy tính thật dễ dàng!' }
     ];
 
     hotspotData.forEach(h => {
-      const sp = createTextSprite(h.label, '#0288d1', '#ffffff', 250, 72, 26);
+      const sp = createTextSprite(h.label, '#0288d1', '#ffffff', 260, 72, 24);
       sp.position.set(...h.pos);
-      sp.userData = { type: 'hotspot', info: h.msg, targetId: h.id };
+      sp.userData = { type: 'hotspot', info: h.msg };
       scene.add(sp);
       hotspotSprites.push(sp);
       interactables.push(sp);
     });
 
-    // BẢN ĐỒ PHÒNG VR NỔI TRONG KHÔNG GIAN 3D (YÊU CẦU 17)
+    // Menu VR không gian 3D
     const vrSpatialMenu = new THREE.Group();
     vrSpatialMenu.position.set(-1.6, 1.65, -1.2);
     vrSpatialMenu.rotation.y = 0.45;
     scene.add(vrSpatialMenu);
 
-    const vrNavItems = [
+    [
       { mode: 'explore', title: '🏠 Phòng máy' },
       { mode: 'posture', title: '🪑 Tư thế ngồi' },
       { mode: 'light', title: '💡 Ánh sáng' },
-      { mode: 'eyes', title: '👀 Bảo vệ mắt' },
-      { mode: 'window', title: '⏰ Nghỉ ngơi' },
+      { mode: 'eyegame', title: '🟢 Điểm tròn Luyện mắt' },
+      { mode: 'window', title: '🌿 Nhìn ra xa' },
       { mode: 'mouse', title: '🖱 Chuột máy tính' },
-      { mode: 'challenge', title: '🎮 Thử thách' }
-    ];
-
-    vrNavItems.forEach((item, idx) => {
-      const btnSp = createTextSprite(item.title, '#1e293b', '#ffca28', 290, 64, 24);
+      { mode: 'challenge', title: '🏆 Thử thách' }
+    ].forEach((item, idx) => {
+      const btnSp = createTextSprite(item.title, '#1e293b', '#ffca28', 300, 64, 23);
       btnSp.position.set(0, 0.75 - idx * 0.25, 0);
       btnSp.userData = { type: 'vrNav', targetMode: item.mode };
       vrSpatialMenu.add(btnSp);
-      vrMenuButtons.push(btnSp);
       interactables.push(btnSp);
     });
 
     /*************************************************************************
-     * 7. XỬ LÝ TƯ THẾ NGỒI ĐÚNG / SAI & KHOẢNG CÁCH (KHU VỰC 1, 2, 4)
+     * 7. XỬ LÝ TƯ THẾ NGỒI ĐÚNG / SAI CỦA CẬU BÉ & KHOẢNG CÁCH 50-80CM
      *************************************************************************/
     function applyStudentPosture(type) {
       state.postureType = type;
       const s = mainStudent;
-      // Reset mặc định
       s.bodyGroup.position.set(0, 0, 0);
       s.spinePivot.rotation.set(0, 0, 0);
       s.headPivot.rotation.set(0, 0, 0);
@@ -815,86 +996,77 @@
       s.torso.material.color.setHex(0xffffff);
 
       if (type === 'good') {
-        setDistanceCm(65);
+        setDistanceCm(65, false);
         s.torso.material.color.setHex(0xdcfce7);
         sfx.correct();
         state.badges.posture = true;
         saveBadges();
-        setFeedback('✓ TƯ THẾ ĐÚNG: Ngồi thẳng lưng, vai thả lỏng, mắt ngang màn hình (50–80 cm), chân đặt ổn định.', '#4ade80');
-        sayAssistant('Giỏi lắm! Ngồi thẳng lưng và giữ khoảng cách 50–80 cm giúp bảo vệ cột sống và đôi mắt của em.');
+        const msg = '✓ TƯ THẾ ĐÚNG: Bạn nhỏ ngồi thẳng lưng, đầu cổ tự nhiên, mắt ngang màn hình cách 65 cm, hai chân đặt ổn định trên sàn.';
+        setFeedback(msg, '#4ade80');
+        sayAssistant('Giỏi quá chừng luôn! Các em thấy bạn nhỏ ngồi thẳng lưng, mắt cách màn hình 65 xăng-ti-mét chuẩn chưa nè!');
       } else if (type === 'A') {
-        // Tình huống A: Cúi sát màn hình
-        setDistanceCm(30);
-        s.spinePivot.rotation.x = 0.45;
+        setDistanceCm(30, false);
+        s.spinePivot.rotation.x = 0.48;
         s.torso.material.color.setHex(0xfee2e2);
         sfx.wrong();
-        setFeedback('✗ Sai (Tình huống A): Em ngồi quá gần màn hình.', '#f87171');
-        sayAssistant('Cúi sát mặt vào màn hình sẽ làm mắt nhanh mỏi và dễ bị cận thị đấy em nhé!');
+        setFeedback('✗ Sai (Tình huống A): Bạn nhỏ cúi sát mặt, ngồi quá gần màn hình (30 cm).', '#f87171');
+        sayAssistant('Ồ, chưa đúng rồi nghe! Cúi sát mặt vô màn hình thế này là mắt mau mỏi và dễ bị cận thị lắm đó các em!');
       } else if (type === 'B') {
-        // Tình huống B: Ngồi cong lưng
-        s.spinePivot.rotation.x = 0.65;
-        s.headPivot.rotation.x = -0.35;
+        s.spinePivot.rotation.x = 0.68;
+        s.headPivot.rotation.x = -0.38;
         s.torso.material.color.setHex(0xfee2e2);
         sfx.wrong();
-        setFeedback('✗ Sai (Tình huống B): Em cần giữ lưng thẳng và vai thả lỏng.', '#f87171');
-        sayAssistant('Ngồi cong lưng lâu ngày sẽ gây đau mỏi lưng và ảnh hưởng xấu đến cột sống.');
+        setFeedback('✗ Sai (Tình huống B): Bạn nhỏ ngồi cong lưng. Cần giữ lưng thẳng và vai thả lỏng.', '#f87171');
+        sayAssistant('Ngồi cong lưng tôm như rứa là đau lưng và hại cột sống lắm nghe. Các em nhớ ngồi thẳng lưng lên nào!');
       } else if (type === 'C') {
-        // Tình huống C: Ngồi lệch người
         s.spinePivot.rotation.z = 0.42;
-        s.headPivot.rotation.z = -0.2;
+        s.headPivot.rotation.z = -0.22;
         s.torso.material.color.setHex(0xfee2e2);
         sfx.wrong();
-        setFeedback('✗ Sai (Tình huống C): Em cần ngồi ngay ngắn trước máy tính.', '#f87171');
-        sayAssistant('Em hãy ngồi ngay ngắn chính diện với màn hình, không nghiêng vẹo người nhé!');
+        setFeedback('✗ Sai (Tình huống C): Bạn nhỏ ngồi lệch vẹo người. Cần ngồi ngay ngắn trước máy tính.', '#f87171');
+        sayAssistant('Bạn nhỏ đang ngồi nghiêng vẹo người kìa! Các em nhớ ngồi ngay ngắn chính diện với màn hình nghe chưa.');
       } else if (type === 'D') {
-        // Tình huống D: Chân không đặt ổn định
-        s.leftLeg.rotation.x = -0.85;
-        s.rightLeg.rotation.x = 0.65;
+        s.leftLeg.rotation.x = 1.15;
+        s.rightLeg.rotation.x = -0.65;
         s.torso.material.color.setHex(0xfee2e2);
         sfx.wrong();
-        setFeedback('✗ Sai (Tình huống D): Em cần đặt chân ở tư thế thoải mái và ổn định.', '#f87171');
-        sayAssistant('Hai bàn chân cần đặt ổn định trên mặt sàn để cơ thể giữ thăng bằng tốt nhất.');
+        setFeedback('✗ Sai (Tình huống D): Chân co quắp không ổn định. Cần đặt hai chân thoải mái trên mặt sàn.', '#f87171');
+        sayAssistant('Hai bàn chân phải đặt bằng phẳng, ổn định dưới sàn nhà mới giúp cơ thể ngồi vững vàng được các em nhé!');
       }
     }
 
-    function setDistanceCm(cm) {
+    function setDistanceCm(cm, speakFeedback = true) {
       state.distanceCm = Number(cm);
       const zOffset = -0.88 + (state.distanceCm / 100);
       mainStudent.root.position.z = zOffset;
 
-      // Cập nhật thước đo 3D
       const len = state.distanceCm / 100;
       rulerBeam.scale.set(1, len / 0.65, 1);
       rulerGroup.position.z = -0.88 + len / 2;
 
       rulerGroup.remove(rulerLabel);
-      let statusTxt = '';
       let badgeColor = '#16a34a';
 
       if (state.distanceCm >= 50 && state.distanceCm <= 80) {
-        statusTxt = `Khoảng cách: ${state.distanceCm} cm — ✓ Rất tốt!`;
         rulerMat.color.setHex(0x00e676);
         badgeColor = '#16a34a';
         state.badges.distance = true;
         saveBadges();
-        if (state.mode === 'eyes') {
-          setFeedback(`✓ Tuyệt vời! Khoảng cách phù hợp là 50–80 cm (Hiện tại: ${state.distanceCm} cm).`, '#4ade80');
-        } else {
-          setFeedback(statusTxt, '#4ade80');
-        }
+        setFeedback(`Khoảng cách: ${state.distanceCm} cm — ✓ Rất tốt! (An toàn 50–80 cm)`, '#4ade80');
+        if (speakFeedback) sayAssistant(`Tuyệt vời luôn! Khoảng cách ${state.distanceCm} xăng-ti-mét nằm trong vùng an toàn từ 50 đến 80 xăng-ti-mét rồi đó!`);
       } else if (state.distanceCm < 50) {
-        statusTxt = `Khoảng cách: ${state.distanceCm} cm — ⚠ Em đang ngồi quá gần màn hình.`;
         rulerMat.color.setHex(0xef4444);
         badgeColor = '#dc2626';
-        setFeedback(statusTxt, '#f87171');
+        setFeedback(`Khoảng cách: ${state.distanceCm} cm — ⚠ Em đang ngồi quá gần màn hình (Dưới 50 cm).`, '#f87171');
+        if (speakFeedback) sayAssistant(`Gần quá rồi em ơi! Cách có ${state.distanceCm} xăng-ti-mét thôi, em kéo lùi ghế ra từ 50 đến 80 xăng-ti-mét nghe!`);
       } else {
-        statusTxt = `Khoảng cách: ${state.distanceCm} cm — ⚠ Em đang ngồi quá xa màn hình.`;
         rulerMat.color.setHex(0xf59e0b);
         badgeColor = '#d97706';
-        setFeedback(statusTxt, '#fbbf24');
+        setFeedback(`Khoảng cách: ${state.distanceCm} cm — ⚠ Em đang ngồi quá xa màn hình (Trên 80 cm).`, '#fbbf24');
+        if (speakFeedback) sayAssistant(`Xa quá rồi nè! Ngồi xa trên 80 xăng-ti-mét sẽ khó nhìn rõ chữ trên màn hình đó em.`);
       }
 
-      rulerLabel = createTextSprite(`${state.distanceCm} cm`, badgeColor, '#ffffff', 220, 65, 26);
+      rulerLabel = createTextSprite(`${state.distanceCm} cm`, badgeColor, '#ffffff', 220, 65, 25);
       rulerLabel.position.set(0, 0.16, 0);
       rulerGroup.add(rulerLabel);
 
@@ -903,90 +1075,97 @@
     }
 
     /*************************************************************************
-     * 8. TRÒ CHƠI “TƯ THẾ NÀO ĐÚNG?” (YÊU CẦU 6 - 5 CÂU HỎI)
+     * 8. TRÒ CHƠI THƯ GIÃN MẮT VỚI CHUYỂN ĐỘNG CỦA ĐIỂM TRÒN (MỚI)
      *************************************************************************/
-    const quizQuestions = [
-      { q: 'Câu 1/5: Theo em, bạn nào đang ngồi đúng tư thế?', options: ['Bạn A: Cúi sát mặt 25cm', 'Bạn B: Lưng thẳng, mắt cách 65cm', 'Bạn C: Ngồi cong gù lưng', 'Bạn D: Co chân lên ghế'], ans: 1, poses: ['A', 'good', 'B', 'D'] },
-      { q: 'Câu 2/5: Khoảng cách từ mắt đến màn hình bao nhiêu là đúng chuẩn?', options: ['Bạn A: Ngồi thẳng, cách 60cm', 'Bạn B: Ngồi sát màn hình 30cm', 'Bạn C: Ngồi nghiêng vẹo người', 'Bạn D: Ngồi quá xa 110cm'], ans: 0, poses: ['good', 'A', 'C', 'D'] },
-      { q: 'Câu 3/5: Tư thế lưng và vai như thế nào giúp bảo vệ cột sống?', options: ['Bạn A: Gù lưng về trước', 'Bạn B: Vẹo vai sang một bên', 'Bạn C: Lưng thẳng, vai thả lỏng tự nhiên', 'Bạn D: Cúi gằm mặt'], ans: 2, poses: ['B', 'C', 'good', 'A'] },
-      { q: 'Câu 4/5: Khi ngồi làm việc với máy tính, em đặt chân thế nào?', options: ['Bạn A: Gác chân lên bàn', 'Bạn B: Co quắp chân', 'Bạn C: Đu đưa chân liên tục', 'Bạn D: Đặt hai chân ổn định, thoải mái trên sàn'], ans: 3, poses: ['D', 'B', 'C', 'good'] },
-      { q: 'Câu 5/5: Hãy chọn bạn nhỏ thực hiện đúng quy tắc an toàn!', options: ['Bạn A: Ngồi ngay ngắn, lưng thẳng, cách 65cm', 'Bạn B: Ngồi lệch vẹo cột sống', 'Bạn C: Dí sát mắt vào màn hình', 'Bạn D: Ngồi cong lưng tôm'], ans: 0, poses: ['good', 'C', 'A', 'B'] }
-    ];
+    window.setEyeBallPattern = function(pat) {
+      sfx.click();
+      state.eyeGamePattern = pat;
+      const names = {
+        infinity: 'Quỹ đạo Vô cực (∞) giúp mắt đảo đều hai bên',
+        circle: 'Quỹ đạo Xoay tròn giúp cơ mắt linh hoạt 360 độ',
+        cross: 'Quỹ đạo 4 hướng (Trái - Phải - Lên - Xuống)'
+      };
+      setFeedback(`🟢 Đang chạy: ${names[pat]}. Hãy đưa mắt nhìn theo Điểm tròn màu xanh và nhấp chuột vào điểm tròn để ghi điểm!`, '#4ade80');
+      sayAssistant(`Các em hãy giữ đầu thẳng, chỉ đưa đôi mắt nhìn theo điểm tròn màu xanh đang di chuyển để thư giãn mắt nghe!`);
+    };
 
-    function renderQuizUI() {
-      const qData = quizQuestions[state.quizIndex];
-      document.getElementById('panel-title').innerText = `🎯 TRÒ CHƠI: TƯ THẾ NÀO ĐÚNG? (Điểm: ${state.quizScore}/5)`;
-      setFeedback(qData.q, '#fef08a');
-      const ctrl = document.getElementById('interactive-controls');
-      ctrl.innerHTML = qData.options.map((opt, idx) =>
-        `<button class="ctrl-btn" onclick="answerQuiz(${idx})">${opt}</button>`
-      ).join('');
+    function hitEyeBallTarget() {
+      state.eyeGameScore++;
+      state.badges.eyeRelaxGame = true;
+      saveBadges();
+      sfx.correct();
+      eyeBallMesh.material.color.setHex(0xfef08a);
+      setTimeout(() => eyeBallMesh.material.color.setHex(0x00e676), 300);
+
+      document.getElementById('panel-title').innerText = `🟢 TRÒ CHƠI THƯ GIÃN MẮT VỚI ĐIỂM TRÒN (Điểm tinh anh: ${state.eyeGameScore})`;
+      if (state.eyeGameScore === 3) {
+        sayAssistant('Giỏi quá chừng! Đôi mắt của em đã được tập thể dục thật khỏe khoắn rồi đó!');
+      }
     }
 
-    window.answerQuiz = function(choiceIdx) {
-      const qData = quizQuestions[state.quizIndex];
-      const chosenPose = qData.poses[choiceIdx];
-      applyStudentPosture(chosenPose);
-
-      if (choiceIdx === qData.ans) {
-        state.quizScore++;
-        sfx.correct();
-        setFeedback(`🎉 Chính xác! Bạn đã ngồi đúng tư thế. (Điểm: ${state.quizScore}/5)`, '#4ade80');
-      } else {
-        sfx.wrong();
-        setFeedback(`✗ Chưa đúng rồi! Hãy quan sát lại lưng, mắt và khoảng cách với màn hình nhé!`, '#f87171');
-      }
-
-      setTimeout(() => {
-        state.quizIndex++;
-        if (state.quizIndex < quizQuestions.length) {
-          renderQuizUI();
-        } else {
-          sfx.fanfare();
-          document.getElementById('panel-title').innerText = `🏆 KẾT QUẢ TRÒ CHƠI: ${state.quizScore}/5 ĐIỂM`;
-          setFeedback(`Chúc mừng em đã hoàn thành 5 câu hỏi với số điểm ${state.quizScore}/5!`, '#4ade80');
-          document.getElementById('interactive-controls').innerHTML =
-            `<button class="ctrl-btn good" onclick="restartQuiz()">🔄 Chơi lại từ đầu</button>`;
-        }
-      }, 1700);
-    };
-
-    window.restartQuiz = function() {
-      state.quizScore = 0;
-      state.quizIndex = 0;
-      applyStudentPosture('good');
-      renderQuizUI();
-    };
+    function renderEyeGameControls() {
+      document.getElementById('panel-title').innerText = `🟢 TRÒ CHƠI THƯ GIÃN MẮT VỚI ĐIỂM TRÒN (Điểm tinh anh: ${state.eyeGameScore})`;
+      setFeedback('👀 Hãy nhìn theo Điểm tròn màu xanh đang chuyển động trên màn hình và bấm vào Điểm tròn 3 lần để nhận huy hiệu!', '#4ade80');
+      document.getElementById('interactive-controls').innerHTML = `
+        <button class="ctrl-btn good" onclick="setEyeBallPattern('infinity')">♾️ Chuyển động Vô cực (∞)</button>
+        <button class="ctrl-btn" onclick="setEyeBallPattern('circle')">🔄 Chuyển động Xoay tròn</button>
+        <button class="ctrl-btn purple" onclick="setEyeBallPattern('cross')">➕ Chuyển động 4 hướng</button>
+        <button class="ctrl-btn warn" onclick="hitEyeBallTarget()">🎯 Bấm Điểm tròn (+1 điểm)</button>
+      `;
+    }
 
     /*************************************************************************
-     * 9. KHU VỰC 3 & 8: ÁNH SÁNG PHÒNG MÁY & THÍ NGHIỆM ÁNH SÁNG
+     * 9. NÚT BẬT/TẮT ĐÈN KÈM KHUYẾN CÁO ÁNH SÁNG CHUẨN Y TẾ HỌC ĐƯỜNG
      *************************************************************************/
-    function updateRoomLighting() {
-      ceilingPointLight.intensity = state.ceilingLightOn ? 0.85 : 0.05;
+    let advisoryTimeout = null;
+    function showLightAdvisoryBanner() {
+      const banner = document.getElementById('light-advisory-banner');
+      banner.style.display = 'block';
+      clearTimeout(advisoryTimeout);
+      advisoryTimeout = setTimeout(() => { banner.style.display = 'none'; }, 9000);
+    }
+
+    window.quickToggleLightWithAdvisory = function() {
+      state.ceilingLightOn = !state.ceilingLightOn;
+      state.directGlare = false;
+      sfx.lightSwitch();
+      showLightAdvisoryBanner();
+      updateRoomLighting(true);
+    };
+
+    function updateRoomLighting(fromQuickBtn = false) {
+      ceilingPointLight.intensity = state.ceilingLightOn ? 0.88 : 0.05;
       lampBulbMat.color.setHex(state.ceilingLightOn ? 0xfffbeb : 0x475569);
       windowBlind.visible = !state.windowBlindsOpen;
       sunDirLight.intensity = state.windowBlindsOpen ? 0.65 : 0.08;
-      ambientLight.intensity = (state.ceilingLightOn || state.windowBlindsOpen) ? 0.62 : 0.18;
-      glareMat.opacity = state.directGlare ? 0.78 : 0.0;
+      ambientLight.intensity = (state.ceilingLightOn || state.windowBlindsOpen) ? 0.62 : 0.16;
+      glareMat.opacity = state.directGlare ? 0.8 : 0.0;
+
+      const quickBtn = document.getElementById('btn-quick-light');
+      if (quickBtn) {
+        quickBtn.innerText = state.ceilingLightOn ? '💡 Đèn: ĐANG BẬT' : '🌑 Đèn: ĐANG TẮT';
+      }
 
       if (!state.ceilingLightOn && !state.windowBlindsOpen) {
-        setFeedback('⚠ Tình huống 1 (Phòng quá tối): Ánh sáng chưa phù hợp.', '#f87171');
-        sayAssistant('Phòng tối quá sẽ làm mắt em phải điều tiết căng thẳng. Hãy bật đèn trần lên nhé!');
+        setFeedback('⚠ Phòng quá tối! Khuyến cáo: Cần ngồi học với máy tính trong môi trường đủ ánh sáng để bảo vệ mắt.', '#f87171');
+        sayAssistant('Tối quá các em ơi! Khuyến cáo khi ngồi máy tính là phòng học phải đủ ánh sáng, các em bật đèn lên lại nghe!');
       } else if (state.directGlare) {
-        setFeedback('⚠ Tình huống 2: Không nên để ánh sáng chiếu trực tiếp vào màn hình (gây chói lóa).', '#fbbf24');
-        sayAssistant('Ánh sáng chiếu thẳng vào màn hình gây bóng lóa làm em rất mỏi mắt.');
+        setFeedback('⚠ Chói màn hình! Khuyến cáo: Hạn chế ánh sáng chiếu trực tiếp vào màn hình hoặc chiếu thẳng vào mắt.', '#fbbf24');
+        sayAssistant('Ánh sáng chiếu thẳng vô màn hình gây lóa mắt rồi! Mình cần hạn chế ánh sáng chiếu trực tiếp vào màn hình nghe các em.');
       } else {
         state.badges.lighting = true;
         saveBadges();
-        setFeedback('✓ Tình huống 3: Ánh sáng phù hợp! Phòng đủ sáng và không chiếu trực tiếp vào màn hình.', '#4ade80');
-        sayAssistant('Rất tuyệt! Phòng học vừa đủ sáng lại không bị chói màn hình.');
+        const msg = '✓ Ánh sáng đạt chuẩn! Khuyến cáo: Ngồi với máy tính trong môi trường đủ ánh sáng và hạn chế ánh sáng chiếu trực tiếp.';
+        setFeedback(msg, '#4ade80');
+        if (fromQuickBtn) {
+          sayAssistant('Đèn đã điều chỉnh! Các em nhớ khuyến cáo nhé: Luôn ngồi học với máy tính trong môi trường đủ ánh sáng và hạn chế ánh sáng chiếu trực tiếp vào màn hình nghe!');
+        }
       }
     }
 
     window.setLightScenario = function(scen) {
-      sfx.switchLight();
-      state.badges.lightSwitch = true;
-      saveBadges();
+      sfx.lightSwitch();
+      showLightAdvisoryBanner();
       if (scen === 'toggleCeiling') {
         state.ceilingLightOn = !state.ceilingLightOn;
         state.directGlare = false;
@@ -1006,23 +1185,82 @@
         state.windowBlindsOpen = true;
         state.directGlare = false;
         sfx.correct();
+        sayAssistant('Tuyệt vời! Phòng học đã đủ ánh sáng và không bị ánh sáng chiếu trực tiếp vào màn hình rồi đó các em!');
       }
-      updateRoomLighting();
+      updateRoomLighting(false);
       if (state.mode === 'light') renderLightControls();
     };
 
     function renderLightControls() {
       document.getElementById('interactive-controls').innerHTML = `
-        <button class="ctrl-btn" onclick="setLightScenario('toggleCeiling')">💡 Đèn trần: ${state.ceilingLightOn ? 'ĐANG BẬT' : 'ĐANG TẮT'}</button>
+        <button class="ctrl-btn" onclick="setLightScenario('toggleCeiling')">💡 Công tắc Đèn trần: ${state.ceilingLightOn ? 'BẬT' : 'TẮT'}</button>
         <button class="ctrl-btn" onclick="setLightScenario('toggleBlinds')">☀️ Rèm cửa sổ: ${state.windowBlindsOpen ? 'MỞ' : 'ĐÓNG'}</button>
-        <button class="ctrl-btn bad" onclick="setLightScenario('dark')">🌙 Thử nghiệm 1: Phòng quá tối</button>
-        <button class="ctrl-btn warn" onclick="setLightScenario('glare')">⚡ Thử nghiệm 2: Chiếu chói màn hình</button>
-        <button class="ctrl-btn good" onclick="setLightScenario('good')">✓ Thử nghiệm 3: Ánh sáng chuẩn</button>
+        <button class="ctrl-btn bad" onclick="setLightScenario('dark')">🌙 Thử nghiệm: Phòng thiếu sáng</button>
+        <button class="ctrl-btn warn" onclick="setLightScenario('glare')">⚡ Thử nghiệm: Ánh sáng chiếu trực tiếp</button>
+        <button class="ctrl-btn good" onclick="setLightScenario('good')">✓ Đặt Ánh sáng Chuẩn khuyến cáo</button>
       `;
     }
 
     /*************************************************************************
-     * 10. KHU VỰC 5 & 11: ĐỒNG HỒ 30 PHÚT, NGHỈ NGƠI & NHÌN RA CỬA SỔ
+     * 10. TRÒ CHƠI ĐỐ VUI “TƯ THẾ NÀO ĐÚNG?” (5 CÂU HỎI)
+     *************************************************************************/
+    const quizQuestions = [
+      { q: 'Câu 1/5: Theo em, bạn nhỏ ở tư thế nào đang ngồi ĐÚNG?', options: ['A: Cúi sát mặt 30cm', 'B: Lưng thẳng, mắt cách 65cm', 'C: Ngồi cong lưng tôm', 'D: Co chân lên ghế'], ans: 1, poses: ['A', 'good', 'B', 'D'] },
+      { q: 'Câu 2/5: Khoảng cách từ mắt đến màn hình bao nhiêu là đúng chuẩn?', options: ['A: Ngồi thẳng, cách 50–80 cm', 'B: Ngồi sát 25 cm', 'C: Ngồi lệch vẹo người', 'D: Ngồi quá xa 115 cm'], ans: 0, poses: ['good', 'A', 'C', 'D'] },
+      { q: 'Câu 3/5: Tư thế lưng và vai như thế nào giúp em không bị đau lưng?', options: ['A: Cúi gù lưng', 'B: Nghiêng vẹo vai', 'C: Lưng thẳng, vai thả lỏng tự nhiên', 'D: Cúi sát màn hình'], ans: 2, poses: ['B', 'C', 'good', 'A'] },
+      { q: 'Câu 4/5: Khi ngồi học với máy tính, hai chân em đặt thế nào?', options: ['A: Co quắp trên ghế', 'B: Đặt ổn định, thoải mái trên mặt sàn', 'C: Gác chân lên bàn', 'D: Đu đưa chân liên tục'], ans: 1, poses: ['D', 'good', 'D', 'C'] },
+      { q: 'Câu 5/5: Ánh sáng phòng máy tính như thế nào là tốt cho mắt?', options: ['A: Đủ ánh sáng, không chiếu trực tiếp vào màn hình', 'B: Tắt hết đèn tối om', 'C: Để nắng chiếu chói thẳng vào màn hình', 'D: Cúi sát mắt trong bóng tối'], ans: 0, poses: ['good', 'B', 'A', 'D'] }
+    ];
+
+    function renderQuizUI() {
+      const qData = quizQuestions[state.quizIndex];
+      document.getElementById('panel-title').innerText = `🎯 ĐỐ VUI: TƯ THẾ NÀO ĐÚNG? (Điểm: ${state.quizScore}/5)`;
+      setFeedback(qData.q, '#fef08a');
+      sayAssistant(qData.q);
+      document.getElementById('interactive-controls').innerHTML = qData.options.map((opt, idx) =>
+        `<button class="ctrl-btn" onclick="answerQuiz(${idx})">${opt}</button>`
+      ).join('');
+    }
+
+    window.answerQuiz = function(choiceIdx) {
+      const qData = quizQuestions[state.quizIndex];
+      applyStudentPosture(qData.poses[choiceIdx]);
+
+      if (choiceIdx === qData.ans) {
+        state.quizScore++;
+        sfx.correct();
+        setFeedback(`🎉 Chính xác! Giỏi quá chừng luôn! (Điểm: ${state.quizScore}/5)`, '#4ade80');
+        sayAssistant('Chính xác! Em trả lời giỏi quá chừng luôn!');
+      } else {
+        sfx.wrong();
+        setFeedback(`✗ Chưa đúng rồi! Hãy quan sát lại lưng, mắt và khoảng cách với màn hình nghe!`, '#f87171');
+        sayAssistant('Chưa đúng rồi em ơi! Em nhìn kỹ lại lưng và khoảng cách mắt của bạn nhỏ nghe.');
+      }
+
+      setTimeout(() => {
+        state.quizIndex++;
+        if (state.quizIndex < quizQuestions.length) {
+          renderQuizUI();
+        } else {
+          sfx.fanfare();
+          document.getElementById('panel-title').innerText = `🏆 KẾT QUẢ ĐỐ VUI: ${state.quizScore}/5 ĐIỂM`;
+          setFeedback(`Chúc mừng em đã hoàn thành trò chơi với ${state.quizScore}/5 điểm!`, '#4ade80');
+          sayAssistant(`Chúc mừng em nghe! Em đã đạt được ${state.quizScore} trên 5 điểm rồi đó!`);
+          document.getElementById('interactive-controls').innerHTML =
+            `<button class="ctrl-btn good" onclick="restartQuiz()">🔄 Chơi lại lần nữa</button>`;
+        }
+      }, 2100);
+    };
+
+    window.restartQuiz = function() {
+      state.quizScore = 0;
+      state.quizIndex = 0;
+      applyStudentPosture('good');
+      renderQuizUI();
+    };
+
+    /*************************************************************************
+     * 11. ĐỒNG HỒ 30 PHÚT, NGHỈ NGƠI & CHUỘT MÁY TÍNH 3D
      *************************************************************************/
     let usageInterval = null;
     let restInterval = null;
@@ -1036,16 +1274,13 @@
     window.toggleUsageTimer = function() {
       sfx.click();
       state.timerRunning = !state.timerRunning;
-      const btn = document.getElementById('btn-timer-start');
-      btn.innerText = state.timerRunning ? '⏸ TẠM DỪNG' : '▶ BẮT ĐẦU';
+      document.getElementById('btn-timer-start').innerText = state.timerRunning ? '⏸ TẠM DỪNG' : '▶ BẮT ĐẦU';
       if (state.timerRunning && !usageInterval) {
         usageInterval = setInterval(() => {
           if (!state.timerRunning) return;
-          state.timerSeconds += 10; // Tăng tốc độ mô phỏng (mỗi giây thực = 10 giây mô phỏng)
+          state.timerSeconds += 10;
           document.getElementById('timer-display').innerText = formatTime(state.timerSeconds);
-          if (state.timerSeconds >= 1800) {
-            trigger30MinRestAlert();
-          }
+          if (state.timerSeconds >= 1800) trigger30MinRestAlert();
         }, 1000);
       }
     };
@@ -1059,21 +1294,21 @@
     function trigger30MinRestAlert() {
       state.timerRunning = false;
       document.getElementById('btn-timer-start').innerText = '▶ BẮT ĐẦU';
-      sfx.alarmRest();
+      sfx.fanfare();
       state.badges.rest = true;
       saveBadges();
 
-      // Nhân vật học sinh đứng dậy thư giãn
-      mainStudent.bodyGroup.position.set(0.55, 0.15, 0.2);
+      mainStudent.bodyGroup.position.set(0.55, 0.12, 0.2);
       document.getElementById('rest-modal').style.display = 'flex';
+      sayAssistant('Đã hết 30 phút ngồi máy tính rồi các em ơi! Mình đứng dậy vươn vai, uống nước và nhìn ra xa thư giãn mắt nghe!');
       state.restCountdown = 20;
-      document.getElementById('rest-countdown').innerText = `Thời gian vận động thư giãn: ${state.restCountdown} giây`;
+      document.getElementById('rest-countdown').innerText = `Thời gian thư giãn: ${state.restCountdown} giây`;
 
       clearInterval(restInterval);
       restInterval = setInterval(() => {
         if (state.restCountdown > 0) {
           state.restCountdown--;
-          document.getElementById('rest-countdown').innerText = `Thời gian vận động thư giãn: ${state.restCountdown} giây`;
+          document.getElementById('rest-countdown').innerText = `Thời gian thư giãn: ${state.restCountdown} giây`;
         }
       }, 1000);
     }
@@ -1082,15 +1317,17 @@
       sfx.correct();
       const st = document.getElementById('relax-status');
       if (act === 'window') {
-        st.innerText = '👀 Em đang phóng tầm mắt nhìn bầu trời, mây và cây xanh ngoài sân trường...';
+        st.innerText = '👀 Em đang nhìn ra xa ngắm cây xanh và bầu trời ngoài sân trường...';
+        sayAssistant('Nhìn ra cây xanh ngoài sân trường giúp đôi mắt em dịu lại liền đó!');
       } else if (act === 'stretch') {
-        st.innerText = '🙆 Hai tay đan vào nhau, vươn vai lên cao hít thở sâu thật sảng khoái!';
-        mainStudent.leftArm.rotation.x = 2.6;
-        mainStudent.rightArm.rotation.x = 2.6;
+        st.innerText = '🙆 Hai tay vươn cao, hít thở thật sâu, cơ thể khỏe khoắn!';
+        sayAssistant('Vươn vai cao lên nào, khỏe quá chừng luôn!');
       } else if (act === 'walk') {
-        st.innerText = '🚶 Đứng dậy đi lại nhẹ nhàng giúp máu lưu thông và cơ xương dẻo dai!';
+        st.innerText = '🚶 Đứng lên đi lại nhẹ nhàng giúp cơ xương dẻo dai!';
+        sayAssistant('Đi lại nhẹ nhàng quanh phòng giúp chân tay đỡ mỏi nghe các em.');
       } else if (act === 'water') {
-        st.innerText = '💧 Uống một ngụm nước mát giúp cơ thể và đôi mắt thêm tỉnh táo!';
+        st.innerText = '💧 Uống một ngụm nước mát giúp cơ thể tươi tỉnh!';
+        sayAssistant('Uống một ngụm nước mát cho tỉnh táo rồi mình học tiếp nghe!');
       }
     };
 
@@ -1100,19 +1337,14 @@
       document.getElementById('rest-modal').style.display = 'none';
       state.timerSeconds = 0;
       document.getElementById('timer-display').innerText = '00:00';
-      mainStudent.leftArm.rotation.x = 0.55;
-      mainStudent.rightArm.rotation.x = 0.55;
       applyStudentPosture('good');
-      setFeedback('✓ Em đã nghỉ ngơi xong! Cơ thể và đôi mắt đã sẵn sàng học tập tiếp.', '#4ade80');
     };
 
-    /*************************************************************************
-     * 11. KHU VỰC 6: TƯƠNG TÁC & MINI GAME CHUỘT MÁY TÍNH 3D
-     *************************************************************************/
+    // Tương tác Chuột 3D
     const mousePartQuestions = [
       { part: 'left', ask: 'Hãy nhấn vào NÚT TRÁI chuột!' },
       { part: 'right', ask: 'Hãy nhấn vào NÚT PHẢI chuột!' },
-      { part: 'scroll', ask: 'Hãy nhấn vào NÚT CUỘN chuột!' }
+      { part: 'scroll', ask: 'Hãy nhấn vào NÚT CUỘN ở giữa chuột!' }
     ];
 
     window.inspectMousePart = function(partKey) {
@@ -1122,16 +1354,18 @@
 
       if (partKey === 'left') {
         mouseLeftBtn.material.color.setHex(0x00e676);
-        setFeedback('🖱 Nút trái chuột: Dùng để chọn đối tượng, nháy chuột và thực hiện một số thao tác.', '#4ade80');
+        setFeedback('🖱 Nút trái chuột: Dùng để chọn biểu tượng, nháy chuột và mở chương trình.', '#4ade80');
+        sayAssistant('Đây là Nút trái chuột, dùng để chọn đối tượng và nháy chuột đó các em!');
       } else if (partKey === 'right') {
         mouseRightBtn.material.color.setHex(0x00e676);
-        setFeedback('🖱 Nút phải chuột: Dùng để mở một số thực đơn lệnh.', '#4ade80');
+        setFeedback('🖱 Nút phải chuột: Dùng để mở bảng thực đơn lệnh.', '#4ade80');
+        sayAssistant('Đây là Nút phải chuột, giúp em mở bảng chọn lệnh nhanh nghe!');
       } else if (partKey === 'scroll') {
         mouseScrollBtn.material.color.setHex(0x00e676);
-        setFeedback('🔄 Nút cuộn: Dùng để cuộn trang lên hoặc xuống.', '#4ade80');
+        setFeedback('🔄 Nút cuộn: Dùng để lăn cuộn trang lên hoặc xuống.', '#4ade80');
+        sayAssistant('Còn đây là Nút cuộn ở giữa, dùng để cuộn trang lên xuống thật tiện lợi!');
       }
 
-      // Kiểm tra trong mini game chuột
       if (state.mode === 'mouse' && state.mouseTargetPart) {
         if (partKey === state.mouseTargetPart) {
           state.mouseGameScore++;
@@ -1140,31 +1374,28 @@
           sfx.correct();
           const nextQ = mousePartQuestions[state.mouseGameScore % mousePartQuestions.length];
           state.mouseTargetPart = nextQ.part;
-          document.getElementById('panel-title').innerText = `🖱 LÀM QUEN VỚI CHUỘT MÁY TÍNH (Điểm mini game: ${state.mouseGameScore})`;
+          document.getElementById('panel-title').innerText = `🖱 LÀM QUEN VỚI CHUỘT MÁY TÍNH (Điểm: ${state.mouseGameScore})`;
           setTimeout(() => {
             setFeedback(`🎉 Đúng rồi (+1 điểm)! Tiếp theo: ${nextQ.ask}`, '#fef08a');
-          }, 1200);
-        } else {
-          sfx.wrong();
+          }, 1300);
         }
-      } else {
-        sfx.click();
       }
     };
 
     /*************************************************************************
-     * 12. KHU VỰC 7: THỬ THÁCH TỔNG HỢP “EM LÀ CHUYÊN GIA MÁY TÍNH” (6 NHIỆM VỤ)
+     * 12. THỬ THÁCH TỔNG HỢP 6 HUY HIỆU
      *************************************************************************/
     function renderChallengeMode() {
       const b = state.badges;
       const completedCount = Object.values(b).filter(Boolean).length;
-      document.getElementById('panel-title').innerText = `🎮 EM LÀ CHUYÊN GIA MÁY TÍNH (${completedCount}/6 NHIỆM VỤ HOÀN THÀNH)`;
+      document.getElementById('panel-title').innerText = `🏆 EM LÀ CHUYÊN GIA MÁY TÍNH NHÍ (${completedCount}/6 HUY HIỆU)`;
 
       if (completedCount === 6) {
         sfx.fanfare();
-        setFeedback('🏆 CHÚC MỪNG! Em đã biết cách sử dụng máy tính đúng cách và an toàn (6/6 huy hiệu)!', '#4ade80');
+        setFeedback('🏆 CHÚC MỪNG! Em đã hoàn thành xuất sắc cả 6/6 nhiệm vụ sử dụng máy tính an toàn!', '#4ade80');
+        sayAssistant('Chúc mừng em nghe! Em đã lấy đủ 6 huy hiệu và trở thành Chuyên gia máy tính nhí xuất sắc rồi đó!');
       } else {
-        setFeedback('Hãy bấm vào từng nhiệm vụ bên dưới để thực hiện và thu thập đủ 6 huy hiệu nhé!', '#fef08a');
+        setFeedback('Hãy bấm vào từng nhiệm vụ bên dưới để thực hành và sưu tập đủ 6 huy hiệu nhé!', '#fef08a');
       }
 
       document.getElementById('interactive-controls').innerHTML = `
@@ -1172,17 +1403,18 @@
           <div class="badge-bar">
             <span class="badge-item ${b.posture ? 'done' : ''}">1. Tư thế đúng ${b.posture ? '✓' : ''}</span>
             <span class="badge-item ${b.distance ? 'done' : ''}">2. Cự ly 50-80cm ${b.distance ? '✓' : ''}</span>
-            <span class="badge-item ${b.lighting ? 'done' : ''}">3. Ánh sáng chuẩn ${b.lighting ? '✓' : ''}</span>
-            <span class="badge-item ${b.lightSwitch ? 'done' : ''}">4. Bật/Tắt đèn ${b.lightSwitch ? '✓' : ''}</span>
+            <span class="badge-item ${b.lighting ? 'done' : ''}">3. Đủ ánh sáng ${b.lighting ? '✓' : ''}</span>
+            <span class="badge-item ${b.eyeRelaxGame ? 'done' : ''}">4. Điểm tròn Luyện mắt ${b.eyeRelaxGame ? '✓' : ''}</span>
             <span class="badge-item ${b.rest ? 'done' : ''}">5. Nghỉ sau 30p ${b.rest ? '✓' : ''}</span>
-            <span class="badge-item ${b.mouse ? 'done' : ''}">6. Nút chuột ${b.mouse ? '✓' : ''}</span>
+            <span class="badge-item ${b.mouse ? 'done' : ''}">6. Nút chuột 3D ${b.mouse ? '✓' : ''}</span>
           </div>
-          <div style="margin-top:10px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;">
+          <div style="margin-top:8px;display:flex;flex-wrap:wrap;justify-content:center;gap:6px;">
             <button class="ctrl-btn good" onclick="switchMode('posture')">Làm NV 1 & 2 (Tư thế & Cự ly)</button>
-            <button class="ctrl-btn warn" onclick="switchMode('light')">Làm NV 3 & 4 (Ánh sáng)</button>
-            <button class="ctrl-btn purple" onclick="fastForward30Min()">Làm NV 5 (Nghỉ ngơi 30p)</button>
+            <button class="ctrl-btn warn" onclick="switchMode('light')">Làm NV 3 (Ánh sáng)</button>
+            <button class="ctrl-btn purple" onclick="switchMode('eyegame')">Làm NV 4 (Điểm tròn Luyện mắt)</button>
+            <button class="ctrl-btn" onclick="fastForward30Min()">Làm NV 5 (Nghỉ ngơi 30p)</button>
             <button class="ctrl-btn" onclick="switchMode('mouse')">Làm NV 6 (Chuột 3D)</button>
-            <button class="ctrl-btn bad" onclick="resetAllProgress()">🔄 Chơi lại từ đầu</button>
+            <button class="ctrl-btn bad" onclick="resetAllProgress()">🔄 Làm lại từ đầu</button>
           </div>
         </div>
       `;
@@ -1196,7 +1428,7 @@
     };
 
     /*************************************************************************
-     * 13. CHUYỂN ĐỔI GIỮA CÁC KHU VỰC HỌC TẬP (SWITCH MODE)
+     * 13. CHUYỂN ĐỔI CÁC KHU VỰC TRẢI NGHIỆM (SWITCH MODE)
      *************************************************************************/
     window.switchMode = function(mode) {
       sfx.click();
@@ -1205,85 +1437,91 @@
       const activeTab = document.getElementById('tab-' + mode);
       if (activeTab) activeTab.classList.add('active');
 
-      // Đặt lại góc nhìn mặc định hoặc cận cảnh theo khu vực
-      cameraTargetPos.set(0, 1.65, 2.3);
+      eyeBallGroup.visible = (mode === 'eyegame');
+      rulerGroup.visible = (mode !== 'eyegame');
+      cameraTargetPos.set(0, 1.62, 2.25);
       cameraLookOverride = null;
       const ctrl = document.getElementById('interactive-controls');
 
       if (mode === 'explore') {
-        document.getElementById('panel-title').innerText = '🏠 KHÁM PHÁ PHÒNG TIN HỌC 360° & BẢNG KIẾN THỨC';
-        setFeedback('Hãy kéo chuột xoay 360° quanh phòng và bấm vào 5 biểu tượng Hotspot phát sáng!', '#fef08a');
-        sayAssistant('Em hãy xoay 360° quan sát phòng máy tính, bảng lớp, cửa sổ và nhấp vào các nhãn kiến thức nhé!');
-        ctrl.innerHTML = hotspotData.map(h =>
-          `<button class="ctrl-btn" onclick="setFeedback('${h.msg}', '#4ade80')">${h.label}</button>`
+        document.getElementById('panel-title').innerText = '🏠 KHÁM PHÁ PHÒNG TIN HỌC 360° (DÀNH CHO LỚP 1, 2, 3, 4, 5)';
+        setFeedback('Hãy kéo chuột xoay 360° quanh phòng và bấm vào các biểu tượng kiến thức nhé!', '#fef08a');
+        sayAssistant('Chào các em nghe! Hãy kéo chuột xoay quanh phòng học và bấm vào các nhãn màu xanh để nghe thầy giải thích nhé!');
+        ctrl.innerHTML = hotspotData.map((h, i) =>
+          `<button class="ctrl-btn" onclick="activateHotspotByIndex(${i})">${h.label}</button>`
         ).join('');
       }
       else if (mode === 'posture') {
-        cameraTargetPos.set(1.25, 1.35, -0.35);
-        cameraLookOverride = new THREE.Vector3(0, 1.0, -0.55);
-        document.getElementById('panel-title').innerText = '🪑 KHU VỰC 1 & 2: THỰC HÀNH TƯ THẾ NGỒI ĐÚNG & SAI';
-        sayAssistant('Em hãy quan sát tư thế của bạn nhỏ và kéo thanh khoảng cách từ 50 đến 80 cm nhé!');
+        cameraTargetPos.set(1.22, 1.32, -0.35);
+        cameraLookOverride = new THREE.Vector3(0, 0.95, -0.48);
+        document.getElementById('panel-title').innerText = '🪑 THỰC HÀNH TƯ THẾ NGỒI ĐÚNG & CÁC TƯ THẾ SAI';
         applyStudentPosture('good');
         ctrl.innerHTML = `
           <button class="ctrl-btn good" onclick="applyStudentPosture('good')">✓ Tư thế ĐÚNG</button>
-          <button class="ctrl-btn bad" onclick="applyStudentPosture('A')">✗ Sai A: Quá gần</button>
+          <button class="ctrl-btn bad" onclick="applyStudentPosture('A')">✗ Sai A: Cúi quá gần</button>
           <button class="ctrl-btn bad" onclick="applyStudentPosture('B')">✗ Sai B: Cong lưng</button>
-          <button class="ctrl-btn bad" onclick="applyStudentPosture('C')">✗ Sai C: Lệch người</button>
-          <button class="ctrl-btn bad" onclick="applyStudentPosture('D')">✗ Sai D: Chân không ổn định</button>
+          <button class="ctrl-btn bad" onclick="applyStudentPosture('C')">✗ Sai C: Ngồi lệch</button>
+          <button class="ctrl-btn bad" onclick="applyStudentPosture('D')">✗ Sai D: Co chân</button>
           <div class="slider-wrap">
-            <span>📏 Cự ly mắt:</span>
-            <input type="range" id="dist-slider" min="20" max="120" value="${state.distanceCm}" oninput="setDistanceCm(this.value)">
+            <span>📏 Khoảng cách mắt:</span>
+            <input type="range" id="dist-slider" min="20" max="120" value="${state.distanceCm}" onchange="setDistanceCm(this.value, true)" oninput="setDistanceCm(this.value, false)">
           </div>
         `;
       }
       else if (mode === 'quiz') {
-        cameraTargetPos.set(1.15, 1.35, -0.35);
-        cameraLookOverride = new THREE.Vector3(0, 1.0, -0.55);
+        cameraTargetPos.set(1.18, 1.32, -0.35);
+        cameraLookOverride = new THREE.Vector3(0, 0.95, -0.48);
         state.quizIndex = 0;
         state.quizScore = 0;
-        sayAssistant('Đố em bạn nhỏ nào đang ngồi đúng tư thế? Hãy quan sát thật kỹ nhé!');
         renderQuizUI();
       }
       else if (mode === 'light') {
-        cameraTargetPos.set(0, 1.65, 1.8);
-        cameraLookOverride = new THREE.Vector3(0, 1.2, -0.88);
-        document.getElementById('panel-title').innerText = '💡 KHU VỰC 3 & 8: THÍ NGHIỆM ÁNH SÁNG PHÒNG MÁY';
-        sayAssistant('Em thử bật/tắt đèn và điều chỉnh rèm cửa để tìm điều kiện ánh sáng phù hợp không gây chói màn hình nhé!');
-        updateRoomLighting();
+        cameraTargetPos.set(0, 1.62, 1.75);
+        cameraLookOverride = new THREE.Vector3(0, 1.15, -0.88);
+        document.getElementById('panel-title').innerText = '💡 BẬT/TẮT ĐÈN & KHUYẾN CÁO ÁNH SÁNG PHÒNG MÁY';
+        showLightAdvisoryBanner();
+        sayAssistant('Khi ngồi học với máy tính, các em nhớ bật đủ ánh sáng và hạn chế ánh sáng chiếu trực tiếp vào màn hình để không bị mỏi mắt nghe!');
+        updateRoomLighting(false);
         renderLightControls();
       }
       else if (mode === 'eyes') {
-        cameraTargetPos.set(1.1, 1.25, -0.45);
-        cameraLookOverride = new THREE.Vector3(0, 1.08, -0.65);
-        document.getElementById('panel-title').innerText = '👀 KHU VỰC 4: TRÒ CHƠI “ĐÔI MẮT CỦA EM”';
-        sayAssistant('Khoảng cách từ mắt đến màn hình nên khoảng 50–80 cm. Em hãy kéo thanh trượt về vùng màu xanh an toàn!');
-        setDistanceCm(35);
+        cameraTargetPos.set(1.12, 1.25, -0.45);
+        cameraLookOverride = new THREE.Vector3(0, 1.05, -0.62);
+        document.getElementById('panel-title').innerText = '📏 ĐO KHOẢNG CÁCH AN TOÀN CHO ĐÔI MẮT (50 – 80 CM)';
+        setDistanceCm(65, true);
         ctrl.innerHTML = `
           <div class="slider-wrap">
-            <span>👀 Điều chỉnh khoảng cách mắt – màn hình (20cm – 120cm):</span>
-            <input type="range" id="dist-slider" min="20" max="120" value="${state.distanceCm}" oninput="setDistanceCm(this.value)">
+            <span>👀 Kéo điều chỉnh khoảng cách mắt – màn hình (20cm – 120cm):</span>
+            <input type="range" id="dist-slider" min="20" max="120" value="${state.distanceCm}" onchange="setDistanceCm(this.value, true)" oninput="setDistanceCm(this.value, false)">
           </div>
-          <button class="ctrl-btn good" onclick="setDistanceCm(65)">Đặt chuẩn 65 cm</button>
+          <button class="ctrl-btn good" onclick="setDistanceCm(65, true)">Đặt chuẩn 65 cm</button>
         `;
+      }
+      else if (mode === 'eyegame') {
+        // Đưa camera lại gần màn hình để học sinh tập trung nhìn theo điểm tròn
+        cameraTargetPos.set(0, 1.15, -0.15);
+        cameraLookOverride = new THREE.Vector3(0, 1.12, -0.88);
+        sayAssistant('Chào mừng các em đến với Trò chơi Thư giãn mắt! Các em hãy giữ đầu thẳng và đưa đôi mắt nhìn theo Điểm tròn màu xanh đang di chuyển nhé!');
+        renderEyeGameControls();
       }
       else if (mode === 'window') {
         cameraTargetPos.set(-2.5, 1.75, 0);
         cameraLookOverride = new THREE.Vector3(-12, 2.4, -1);
-        document.getElementById('panel-title').innerText = '🌿 KHU VỰC 11: MÔ PHỎNG NHÌN RA XA THƯ GIÃN MẮT';
-        setFeedback('👀 Hãy nhìn ra xa ngắm cây xanh, bầu trời, đàn chim và đám mây trôi để thư giãn đôi mắt.', '#4ade80');
-        sayAssistant('Sau thời gian sử dụng máy tính, nhìn ra xa ngắm cây xanh giúp đôi mắt em hết mỏi ngay đấy!');
+        document.getElementById('panel-title').innerText = '🌿 NHÌN RA XA NGOÀI CỬA SỔ THƯ GIÃN ĐÔI MẮT';
+        setFeedback('👀 Hãy phóng tầm mắt nhìn hàng cây xanh, bầu trời và đàn chim bay ngoài sân trường để mắt được nghỉ ngơi.', '#4ade80');
+        sayAssistant('Các em nhìn ra ngoài cửa sổ kìa, cây cối xanh mát và mây trời giúp đôi mắt mình thư giãn khỏe khoắn lắm đó!');
         ctrl.innerHTML = `
-          <button class="ctrl-btn good" onclick="fastForward30Min()">⏰ Mở bảng hoạt động nghỉ ngơi 30 phút</button>
-          <button class="ctrl-btn" onclick="switchMode('explore')">🏠 Quay lại phòng máy</button>
+          <button class="ctrl-btn purple" onclick="switchMode('eyegame')">🟢 Chơi Điểm tròn Luyện mắt</button>
+          <button class="ctrl-btn good" onclick="fastForward30Min()">⏰ Mở bài tập vận động 30 phút</button>
         `;
       }
       else if (mode === 'mouse') {
         cameraTargetPos.set(2.4, 1.55, 0.25);
         cameraLookOverride = new THREE.Vector3(2.4, 0.88, -0.7);
         state.mouseTargetPart = 'left';
-        document.getElementById('panel-title').innerText = `🖱 KHU VỰC 6: LÀM QUEN VỚI CHUỘT MÁY TÍNH (Điểm: ${state.mouseGameScore})`;
-        setFeedback('🎯 Mini game: Hãy nhấn vào NÚT TRÁI chuột (trên mô hình 3D hoặc nút bên dưới)!', '#fef08a');
-        sayAssistant('Chuột máy tính có Nút trái, Nút phải và Nút cuộn. Em hãy nhấp trực tiếp vào từng bộ phận của chuột 3D nhé!');
+        document.getElementById('panel-title').innerText = `🖱 LÀM QUEN VỚI CHUỘT MÁY TÍNH 3D (Điểm: ${state.mouseGameScore})`;
+        setFeedback('🎯 Hãy nhấp vào NÚT TRÁI chuột trên mô hình 3D hoặc bấm nút bên dưới!', '#fef08a');
+        sayAssistant('Trên bàn là con chuột máy tính 3D thật to. Các em hãy bấm vào Nút trái, Nút phải và Nút cuộn để khám phá nghe!');
         ctrl.innerHTML = `
           <button class="ctrl-btn" onclick="inspectMousePart('left')">🖱 Nút trái chuột</button>
           <button class="ctrl-btn warn" onclick="inspectMousePart('right')">🖱 Nút phải chuột</button>
@@ -1291,13 +1529,19 @@
         `;
       }
       else if (mode === 'challenge') {
-        sayAssistant('Hãy hoàn thành đủ 6 nhiệm vụ để nhận danh hiệu Chuyên gia máy tính nhí nhé!');
         renderChallengeMode();
       }
     };
 
+    window.activateHotspotByIndex = function(idx) {
+      const h = hotspotData[idx];
+      sfx.click();
+      setFeedback(h.msg, '#4ade80');
+      sayAssistant(h.msg);
+    };
+
     /*************************************************************************
-     * 14. ĐIỀU KHIỂN CHUỘT, CẢM ỨNG, BÀN PHÍM, GYROSCOPE & WEBXR (YÊU CẦU 18)
+     * 14. TƯƠNG TÁC RAYCASTER, WEBXR & TIẾP CẬN
      *************************************************************************/
     const raycaster = new THREE.Raycaster();
     const mouseVec = new THREE.Vector2();
@@ -1311,7 +1555,6 @@
       startLon = lon;
       startLat = lat;
 
-      // Kiểm tra click vào đối tượng 3D
       mouseVec.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouseVec.y = -(e.clientY / window.innerHeight) * 2 + 1;
       raycaster.setFromCamera(mouseVec, camera);
@@ -1331,14 +1574,6 @@
 
     window.addEventListener('pointerup', () => { isPointerDown = false; });
 
-    window.addEventListener('keydown', (e) => {
-      if (cameraLookOverride) return;
-      if (e.key === 'ArrowLeft' || e.key === 'a') lon -= 4;
-      if (e.key === 'ArrowRight' || e.key === 'd') lon += 4;
-      if (e.key === 'ArrowUp' || e.key === 'w') lat = Math.min(75, lat + 3);
-      if (e.key === 'ArrowDown' || e.key === 's') lat = Math.max(-75, lat - 3);
-    });
-
     function handle3DObjectActivate(obj) {
       const data = obj.userData;
       if (!data) return;
@@ -1350,10 +1585,11 @@
         inspectMousePart(data.part);
       } else if (data.type === 'vrNav') {
         switchMode(data.targetMode);
+      } else if (data.type === 'eyeBallTarget') {
+        hitEyeBallTarget();
       }
     }
 
-    // Chế độ VR & Gaze Reticle (Nhìn 1.5 giây tự kích hoạt)
     window.enterVRMode = async function() {
       sfx.click();
       document.getElementById('start-modal').style.display = 'none';
@@ -1370,13 +1606,13 @@
             return;
           }
         } catch (err) {
-          console.warn('Thiết bị sử dụng chế độ VR 360 trên màn hình:', err);
+          console.warn('Chuyển sang chế độ VR 360 toàn màn hình:', err);
         }
       }
       if (document.documentElement.requestFullscreen) {
         document.documentElement.requestFullscreen().catch(() => {});
       }
-      setFeedback('🥽 Đang ở chế độ VR 360°: Hướng tâm ngắm vào các nút trong 1.5 giây để chọn!', '#4ade80');
+      sayAssistant('Đang ở chế độ Thực tế ảo VR 360 độ. Các em hướng tâm ngắm vào các nút trong 1 giây rưỡi để chọn nghe!');
     };
 
     window.exitVRMode = function() {
@@ -1388,26 +1624,6 @@
       if (session) session.end();
     };
 
-    // Cảm biến xoay điện thoại (Gyroscope)
-    window.toggleGyro = function() {
-      state.gyroActive = !state.gyroActive;
-      document.getElementById('btn-gyro').innerText = state.gyroActive ? '📱 Cảm biến: BẬT' : '📱 Cảm biến xoay';
-      if (state.gyroActive && typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission().catch(() => {});
-      }
-    };
-
-    window.addEventListener('deviceorientation', (e) => {
-      if (!state.gyroActive || cameraLookOverride) return;
-      if (e.alpha !== null && e.beta !== null) {
-        lon = -e.alpha;
-        lat = Math.max(-70, Math.min(70, e.beta - 60));
-      }
-    });
-
-    /*************************************************************************
-     * 15. CÁC HÀM GIAO DIỆN & TIẾP CẬN (ACCESSIBILITY)
-     *************************************************************************/
     function setFeedback(msg, color = '#fef08a') {
       const fb = document.getElementById('feedback-banner');
       fb.innerText = msg;
@@ -1416,27 +1632,33 @@
 
     function sayAssistant(text) {
       document.getElementById('assistant-text').innerText = text;
+      sfx.speak(text);
     }
+
+    window.speakCurrentText = function() {
+      sfx.speak(sfx.lastText);
+    };
+
+    window.toggleVoice = function() {
+      sfx.voiceEnabled = !sfx.voiceEnabled;
+      document.getElementById('btn-voice').innerText = sfx.voiceEnabled ? '🗣️ Giọng Thầy: BẬT' : '🔇 Giọng Thầy: TẮT';
+      if (!sfx.voiceEnabled && 'speechSynthesis' in window) window.speechSynthesis.cancel();
+    };
+
+    window.toggleSound = function() {
+      sfx.soundEnabled = !sfx.soundEnabled;
+      document.getElementById('btn-sound').innerText = sfx.soundEnabled ? '🔊 Âm thanh: ON' : '🔇 Âm thanh: OFF';
+    };
 
     window.toggleAssistant = function() {
       state.assistantVisible = !state.assistantVisible;
       document.getElementById('assistant-bubble').style.display = state.assistantVisible ? 'block' : 'none';
     };
 
-    window.toggleSound = function() {
-      sfx.enabled = !sfx.enabled;
-      document.getElementById('btn-sound').innerText = sfx.enabled ? '🔊 Âm thanh: ON' : '🔇 Âm thanh: OFF';
-    };
-
     let currentFontScale = 1;
     window.changeFontSize = function(delta) {
       currentFontScale = Math.max(0.85, Math.min(1.3, currentFontScale + delta));
       document.documentElement.style.setProperty('--font-scale', currentFontScale);
-    };
-
-    window.toggleAnimSpeed = function() {
-      state.animSpeed = state.animSpeed === 1 ? 0.4 : 1;
-      document.getElementById('btn-speed').innerText = `⚡ Tốc độ: ${state.animSpeed}x`;
     };
 
     window.startApp = function(initialMode) {
@@ -1463,43 +1685,70 @@
     });
 
     /*************************************************************************
-     * 16. VÒNG LẶP ANIMATION 60 FPS & GAZE RAYCASTER
+     * 15. VÒNG LẶP ANIMATION 60 FPS (CHỚP MẮT CẬU BÉ + QUỸ ĐẠO ĐIỂM TRÒN)
      *************************************************************************/
     const clock = new THREE.Clock();
 
     renderer.setAnimationLoop(() => {
-      const t = clock.getElapsedTime() * state.animSpeed;
+      const t = clock.getElapsedTime();
 
-      // Chuyển động mây và đàn chim ngoài cửa sổ
-      clouds.forEach((c, i) => {
-        c.position.z = -6 + ((t * 0.5 + i * 4) % 14);
-      });
+      // Hiệu ứng cậu bé chớp mắt tự nhiên mỗi 3.5 giây và thở nhẹ
+      const blinkCycle = t % 3.6;
+      if (blinkCycle > 3.45) {
+        mainStudent.eyeGroup.scale.y = 0.1;
+      } else {
+        mainStudent.eyeGroup.scale.y = 1.0;
+      }
+
+      // Chuyển động Điểm tròn thư giãn mắt theo 3 quỹ đạo
+      if (eyeBallGroup.visible) {
+        const speed = t * 1.45;
+        let bx = 0, by = 1.12;
+        if (state.eyeGamePattern === 'infinity') {
+          // Đường cong Lemniscate (Hình số 8 nằm ngang ∞)
+          bx = Math.sin(speed) * 0.30;
+          by = 1.12 + Math.sin(speed * 2) * 0.14;
+        } else if (state.eyeGamePattern === 'circle') {
+          bx = Math.cos(speed) * 0.25;
+          by = 1.12 + Math.sin(speed) * 0.17;
+        } else if (state.eyeGamePattern === 'cross') {
+          const phase = Math.floor(speed % 4);
+          const sub = (speed % 1);
+          if (phase === 0) { bx = -0.28 + sub * 0.56; by = 1.12; }
+          else if (phase === 1) { bx = 0.28 - sub * 0.56; by = 1.12; }
+          else if (phase === 2) { bx = 0; by = 0.94 + sub * 0.36; }
+          else { bx = 0; by = 1.30 - sub * 0.36; }
+        }
+        eyeBallGroup.position.set(bx, by, -0.82);
+        eyeBallHalo.rotation.z = t * 2;
+      }
+
+      // Mây trôi & Chim bay ngoài cửa sổ
+      clouds.forEach((c, i) => { c.position.z = -6 + ((t * 0.45 + i * 4) % 14); });
       birds.forEach((b, i) => {
-        b.position.z = -5 + ((t * 1.4 + i * 3) % 12);
-        b.position.y = 3.2 + Math.sin(t * 3 + i) * 0.25;
+        b.position.z = -5 + ((t * 1.3 + i * 3) % 12);
+        b.position.y = 3.2 + Math.sin(t * 3 + i) * 0.22;
       });
 
-      // Hiệu ứng nhấp nhô nhẹ cho các Hotspot
       hotspotSprites.forEach((sp, idx) => {
-        sp.position.y += Math.sin(t * 2.5 + idx) * 0.0008;
+        sp.position.y += Math.sin(t * 2.4 + idx) * 0.0007;
       });
 
-      // Di chuyển mượt Camera
+      // Nội suy góc nhìn Camera mượt mà
       camera.position.lerp(cameraTargetPos, 0.08);
       if (cameraLookOverride) {
         camera.lookAt(cameraLookOverride);
       } else {
         const phi = THREE.MathUtils.degToRad(90 - lat);
         const theta = THREE.MathUtils.degToRad(lon);
-        const lookTarget = new THREE.Vector3(
+        camera.lookAt(
           camera.position.x + Math.sin(phi) * Math.cos(theta),
           camera.position.y + Math.cos(phi),
           camera.position.z + Math.sin(phi) * Math.sin(theta)
         );
-        camera.lookAt(lookTarget);
       }
 
-      // Kiểm tra tâm ngắm VR (Gaze Dwell 1.5s)
+      // Tâm ngắm VR tự động chọn sau 1.4 giây
       if (state.vrActive) {
         raycaster.setFromCamera({ x: 0, y: 0 }, camera);
         const hits = raycaster.intersectObjects(interactables);
