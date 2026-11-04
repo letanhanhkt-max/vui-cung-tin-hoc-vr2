@@ -4,201 +4,648 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Vui Học Tin Học VR 360° - Sử Dụng Máy Tính Đúng Cách & An Toàn (Lớp 1 - 5)</title>
-  <!-- Giao diện CSS -->
-  <link rel="stylesheet" href="./style.css">
   <!-- Thư viện Three.js r128 từ CDN ổn định -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
-  <!-- BỘ MỞ KHÓA TỨC THÌ (FAIL-SAFE BOOTSTRAPPER): Đảm bảo bấm nút vào trải nghiệm ăn ngay 100% -->
-  <script>
-    window.__pendingStartMode = null;
-    window.startApp = function(initialMode) {
-      var mode = initialMode || 'explore';
-      window.__pendingStartMode = mode;
-      var modal = document.getElementById('start-modal');
-      if (modal) {
-        modal.style.display = 'none';
-        modal.style.visibility = 'hidden';
-        modal.style.pointerEvents = 'none';
-        modal.classList.add('closed');
-      }
-      if (typeof window.switchMode === 'function') {
-        window.switchMode(mode);
-      }
-    };
-    window.goHomeModal = function() {
-      var modal = document.getElementById('start-modal');
-      if (modal) {
-        modal.classList.remove('closed');
-        modal.style.display = 'flex';
-        modal.style.visibility = 'visible';
-        modal.style.pointerEvents = 'auto';
-      }
-    };
-  </script>
-</head>
-<body>
+  <style>
+    :root {
+      --primary: #0288d1;
+      --success: #2e7d32;
+      --warning: #ef6c00;
+      --danger: #c62828;
+      --purple: #6a1b9a;
+      --bg-panel: rgba(15, 23, 42, 0.93);
+      --font-scale: 1;
+    }
 
-  <!-- 1. MÀN HÌNH KHỞI ĐỘNG CHƯƠNG TRÌNH (DÀNH CHO LỚP 1, 2, 3, 4, 5) -->
-  <div id="start-modal">
-    <div class="start-box">
-      <div class="start-badge">HỌC LIỆU SỐ THỰC TẾ ẢO (VR 360°) – MÔN TIN HỌC TIỂU HỌC (LỚP 1, 2, 3, 4, 5)</div>
-      <h1 class="start-title">VUI HỌC TIN HỌC<br>SỬ DỤNG MÁY TÍNH ĐÚNG CÁCH VÀ AN TOÀN</h1>
-      <p class="start-sub">“Thầy chào các con nghe! Hôm ni thầy trò mình cùng khám phá phòng máy, rèn tư thế ngồi thẳng lưng, đủ ánh sáng và giữ đôi mắt sáng khỏe nhé!”</p>
-      
-      <div class="start-grid">
-        <button type="button" class="big-btn btn-blue" data-start-mode="explore" onclick="window.startApp('explore')">
-          <span class="btn-emoji">🔵</span>
-          <span>KHÁM PHÁ PHÒNG MÁY</span>
-        </button>
-        <button type="button" class="big-btn btn-green" data-start-mode="posture" onclick="window.startApp('posture')">
-          <span class="btn-emoji">🟢</span>
-          <span>THỰC HÀNH TƯ THẾ NGỒI</span>
-        </button>
-        <button type="button" class="big-btn btn-teal" data-start-mode="eyegame" onclick="window.startApp('eyegame')">
-          <span class="btn-emoji">🟣</span>
-          <span>ĐIỂM TRÒN THƯ GIÃN MẮT</span>
-        </button>
-        <button type="button" class="big-btn btn-orange" data-start-mode="challenge" onclick="window.startApp('challenge')">
-          <span class="btn-emoji">🟠</span>
-          <span>THỬ THÁCH 6 HUY HIỆU</span>
-        </button>
-      </div>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-      <button type="button" class="btn-vr-start" id="btn-enter-vr" onclick="window.startApp('explore'); if(window.enterVRMode) window.enterVRMode();">
-        🥽 VÀO CHẾ ĐỘ THỰC TẾ ẢO VR (WebXR / 360°)
-      </button>
-    </div>
-  </div>
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #87CEEB;
+      font-size: calc(15px * var(--font-scale));
+    }
 
-  <!-- 2. LỚP BIỂU TƯỢNG HOTSPOT 3D NỔI TRONG PHÒNG HỌC -->
-  <div id="hotspot-overlay-layer"></div>
+    /* KHÓA POINTER-EVENTS TRÊN THẺ CON ĐỂ NHẤP CHUỘT LUÔN TRÚNG NÚT CHA 100% */
+    .big-btn *,
+    .btn-vr-start *,
+    .tab-btn *,
+    .icon-btn *,
+    .ctrl-btn *,
+    .mini-btn *,
+    .relax-btn *,
+    .hotspot-pin-3d * {
+      pointer-events: none !important;
+    }
 
-  <!-- 3. HỘP THOẠI KIẾN THỨC NỔI KHI BẤM VÀO BIỂU TƯỢNG TRONG PHÒNG -->
-  <div id="hotspot-popup-card">
-    <div class="popup-icon-badge" id="popup-icon">👀</div>
-    <div class="popup-title" id="popup-title">KIẾN THỨC GHI NHỚ</div>
-    <div class="popup-desc" id="popup-desc">Nội dung hướng dẫn của Thầy giáo</div>
-    <div class="popup-actions">
-      <button type="button" class="ctrl-btn good" id="btn-popup-go" onclick="if(window.goPopupTargetMode) window.goPopupTargetMode()">👉 Vào thực hành ngay</button>
-      <button type="button" class="ctrl-btn" id="btn-popup-close" onclick="if(window.closeHotspotPopup) window.closeHotspotPopup()">✓ Tiếp tục khám phá phòng</button>
-    </div>
-  </div>
+    /* KHUNG CANVAS 3D NẰM Ở TẦNG DƯỚI CÙNG (Z-INDEX: 1) */
+    #canvas-container {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+      cursor: grab;
+    }
 
-  <!-- 4. THANH CÔNG CỤ & BIỂU TƯỢNG CHƯƠNG TRÌNH PHÍA TRÊN -->
-  <div id="top-bar">
-    <div class="nav-group">
-      <button type="button" class="tab-btn active" data-mode="explore" id="tab-explore" onclick="if(window.switchMode) window.switchMode('explore')">🏠 Khám phá Phòng máy</button>
-      <button type="button" class="tab-btn" data-mode="posture" id="tab-posture" onclick="if(window.switchMode) window.switchMode('posture')">🪑 Tư thế ngồi</button>
-      <button type="button" class="tab-btn" data-mode="quiz" id="tab-quiz" onclick="if(window.switchMode) window.switchMode('quiz')">🎯 Đố vui Tư thế</button>
-      <button type="button" class="tab-btn" data-mode="light" id="tab-light" onclick="if(window.switchMode) window.switchMode('light')">💡 Ánh sáng</button>
-      <button type="button" class="tab-btn" data-mode="eyes" id="tab-eyes" onclick="if(window.switchMode) window.switchMode('eyes')">📏 Cự ly Mắt</button>
-      <button type="button" class="tab-btn" data-mode="eyegame" id="tab-eyegame" onclick="if(window.switchMode) window.switchMode('eyegame')">🟢 Điểm tròn Luyện mắt</button>
-      <button type="button" class="tab-btn" data-mode="window" id="tab-window" onclick="if(window.switchMode) window.switchMode('window')">🌿 Nhìn ra xa</button>
-      <button type="button" class="tab-btn" data-mode="mouse" id="tab-mouse" onclick="if(window.switchMode) window.switchMode('mouse')">🖱 Chuột 3D</button>
-      <button type="button" class="tab-btn" data-mode="challenge" id="tab-challenge" onclick="if(window.switchMode) window.switchMode('challenge')">🏆 Thử thách</button>
-    </div>
+    #canvas-container:active {
+      cursor: grabbing;
+    }
 
-    <div class="util-group">
-      <button type="button" class="icon-btn light-quick-btn" id="btn-quick-light" onclick="if(window.quickToggleLightWithAdvisory) window.quickToggleLightWithAdvisory()">💡 Đèn: ĐANG BẬT</button>
-      <button type="button" class="icon-btn" id="btn-voice" onclick="if(window.toggleVoice) window.toggleVoice()">🗣️ Giọng Thầy: BẬT</button>
-      <button type="button" class="icon-btn" id="btn-sound" onclick="if(window.toggleSound) window.toggleSound()">🔊 Âm thanh: ON</button>
-      <button type="button" class="icon-btn" id="btn-font-inc" onclick="if(window.changeFontSize) window.changeFontSize(0.08)">A+</button>
-      <button type="button" class="icon-btn" id="btn-font-dec" onclick="if(window.changeFontSize) window.changeFontSize(-0.08)">A-</button>
-      <button type="button" class="icon-btn" id="btn-help" onclick="if(window.showHelpModal) window.showHelpModal()">❓ Hướng dẫn</button>
-      <button type="button" class="icon-btn" id="btn-home" onclick="window.goHomeModal()">🏡 Trang chủ</button>
-      <button type="button" class="icon-btn" id="btn-exit-vr" style="display:none;background:#c62828;" onclick="if(window.exitVRMode) window.exitVRMode()">🚪 Thoát VR</button>
-    </div>
-  </div>
+    /* LỚP BIỂU TƯỢNG HOTSPOT 3D NỔI TRONG PHÒNG HỌC */
+    #hotspot-overlay-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      z-index: 50;
+      overflow: hidden;
+    }
 
-  <!-- 5. BẢNG KHUYẾN CÁO ÁNH SÁNG KHI BẬT/TẮT ĐÈN -->
-  <div id="light-advisory-banner">
-    💡 <b>KHUYẾN CÁO KHI NGỒI MÁY TÍNH:</b> Các con cần ngồi học trong môi trường <b>đủ ánh sáng</b> và <b>hạn chế ánh sáng chiếu trực tiếp</b> vào màn hình hoặc chiếu thẳng vào mắt để tránh chói lóa, bảo vệ đôi mắt nghe!
-  </div>
+    .hotspot-pin-3d {
+      position: absolute;
+      left: 0;
+      top: 0;
+      transform: translate(-50%, -50%);
+      pointer-events: auto !important;
+      cursor: pointer !important;
+      background: linear-gradient(135deg, #0288d1, #00acc1);
+      color: #ffffff;
+      border: 3px solid #ffffff;
+      border-radius: 28px;
+      padding: 8px 16px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45), 0 0 14px rgba(56, 189, 248, 0.95);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      touch-action: manipulation;
+      transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
 
-  <!-- 6. ĐỒNG HỒ ĐẾM THỜI GIAN DÙNG MÁY (NHẮC NGHỈ SAU 30 PHÚT) -->
-  <div id="timer-widget">
-    <div id="timer-label">⏰ THỜI GIAN DÙNG MÁY</div>
-    <div id="timer-display">00:00</div>
-    <div>
-      <button type="button" class="mini-btn" id="btn-timer-start" onclick="if(window.toggleUsageTimer) window.toggleUsageTimer()">▶ BẮT ĐẦU</button>
-      <button type="button" class="mini-btn" id="btn-timer-fast" style="background:#ef6c00" onclick="if(window.fastForward30Min) window.fastForward30Min()">⏩ 30 phút</button>
-    </div>
-  </div>
+    .hotspot-pin-3d:hover,
+    .hotspot-pin-3d.highlight-pulse {
+      transform: translate(-50%, -50%) scale(1.12);
+      background: linear-gradient(135deg, #16a34a, #22c55e);
+      border-color: #fef08a;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6), 0 0 22px #fef08a;
+      z-index: 70;
+    }
 
-  <!-- 7. THẦY GIÁO TIN HỌC NGƯỜI ĐÀ NẴNG (GIỌNG ẤM ÁP, NHẸ NHÀNG) -->
-  <div id="assistant-box">
-    <div class="avatar-circle" id="teacher-avatar" title="Nhấp vào Thầy để nghe lại lời hướng dẫn" onclick="if(window.onTeacherAvatarClick) window.onTeacherAvatarClick()">👨‍🏫</div>
-    <div class="speech-bubble" id="assistant-bubble">
-      <div class="speech-name">
-        <span>👨‍🏫 Thầy Giáo Tin Học (Đà Nẵng)</span>
-        <div>
-          <button type="button" class="speak-again-btn" id="btn-speak-again" onclick="if(window.speakCurrentText) window.speakCurrentText()">🔊 Nghe Thầy nói</button>
-          <button type="button" class="speak-again-btn" id="btn-voice-config" onclick="if(window.toggleVoiceConfig) window.toggleVoiceConfig()">🎛️ Chọn giọng</button>
-          <span class="close-bubble-btn" id="btn-close-bubble" onclick="if(window.toggleAssistant) window.toggleAssistant()">✖</span>
-        </div>
-      </div>
-      <div id="assistant-text">
-        Thầy chào các con nghe! Hôm ni thầy trò mình cùng khám phá phòng máy tính, rèn tư thế ngồi thẳng lưng, đủ ánh sáng và giữ đôi mắt sáng khỏe nhé!
-      </div>
-      <div id="voice-select-wrap">
-        <span>Giọng đọc:</span>
-        <select id="voice-selector" onchange="if(window.onSelectVoiceChange) window.onSelectVoiceChange(this.value)"></select>
-      </div>
-    </div>
-  </div>
+    .hotspot-pin-3d:active {
+      transform: translate(-50%, -50%) scale(0.95);
+    }
 
-  <!-- 8. TÂM NGẮM VR RETICLE -->
-  <div id="vr-reticle"></div>
+    /* HỘP THOẠI PHẢN HỒI KHI BẤM BIỂU TƯỢNG */
+    #hotspot-popup-card {
+      position: absolute;
+      top: 47%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0.95);
+      z-index: 650;
+      background: #ffffff;
+      color: #0f172a;
+      border-radius: 26px;
+      padding: 22px 26px;
+      max-width: 500px;
+      width: 92%;
+      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.6);
+      border: 4px solid #0288d1;
+      text-align: center;
+      display: none;
+      pointer-events: auto !important;
+    }
 
-  <!-- 9. BẢNG ĐIỀU KHIỂN CHÍNH PHÍA DƯỚI -->
-  <div id="bottom-panel">
-    <div id="panel-title">KHÔNG GIAN PHÒNG TIN HỌC 360°</div>
-    <div id="feedback-banner">✨ Nhấp chuột vào bất kỳ biểu tượng nào trong phòng hoặc các nút bên dưới để khám phá nghe!</div>
-    <div id="interactive-controls"></div>
-  </div>
+    #hotspot-popup-card.show {
+      display: block;
+      transform: translate(-50%, -50%) scale(1);
+    }
 
-  <!-- 10. MODAL NHẮC NHỞ NGHỈ NGƠI SAU 30 PHÚT -->
-  <div class="overlay-modal" id="rest-modal">
-    <div class="modal-card">
-      <h2 class="rest-heading">🌿 ĐẾN GIỜ NGHỈ NGƠI RỒI CÁC CON ƠI!</h2>
-      <p class="rest-desc">
-        Mình đã dùng máy tính 30 phút rồi đó! Các con hãy rời mắt khỏi màn hình, đứng dậy vươn vai và thư giãn mắt nghe.
-      </p>
-      <div id="rest-countdown">Thời gian thư giãn: 20 giây</div>
-      <div class="relax-grid">
-        <button type="button" class="relax-btn" data-relax="window" onclick="if(window.doRelaxAction) window.doRelaxAction('window')">👀 Nhìn ra xa</button>
-        <button type="button" class="relax-btn" data-relax="stretch" onclick="if(window.doRelaxAction) window.doRelaxAction('stretch')">🙆 Vươn vai</button>
-        <button type="button" class="relax-btn" data-relax="walk" onclick="if(window.doRelaxAction) window.doRelaxAction('walk')">🚶 Đi lại nhẹ nhàng</button>
-        <button type="button" class="relax-btn" data-relax="water" onclick="if(window.doRelaxAction) window.doRelaxAction('water')">💧 Uống nước</button>
-      </div>
-      <p id="relax-status">Hãy chọn một hoạt động thư giãn bên trên nghe!</p>
-      <button type="button" class="big-btn btn-green" id="btn-finish-rest" style="width:100%;margin-top:8px;" onclick="if(window.finishRest) window.finishRest()">
-        ✓ CON ĐÃ NGHỈ XONG
-      </button>
-    </div>
-  </div>
+    .popup-icon-badge {
+      width: 66px;
+      height: 66px;
+      border-radius: 50%;
+      background: #e0f2fe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.2rem;
+      margin: 0 auto 10px;
+      border: 3px solid #0288d1;
+    }
 
-  <!-- 11. MODAL HƯỚNG DẪN SỬ DỤNG -->
-  <div class="overlay-modal" id="help-modal">
-    <div class="modal-card help-card">
-      <h2 style="color:#0277bd;margin-top:0;">📘 HƯỚNG DẪN DÀNH CHO HỌC SINH LỚP 1, 2, 3, 4, 5</h2>
-      <ul class="help-list">
-        <li>👆 <b>Nhấp vào Biểu tượng trong phòng:</b> Nhấp chuột hoặc chạm tay vào bất kỳ biểu tượng nào (`👀 Đôi mắt`, `🪑 Tư thế ngồi`, `💡 Đèn & Ánh sáng`, `⏰ Đồng hồ 30p`, `🌿 Cửa sổ`, `🖱 Chuột 3D`) hoặc bấm trực tiếp vào đồ vật 3D trong phòng để nghe Thầy hướng dẫn!</li>
-        <li>👨‍🏫 <b>Giọng Thầy giáo Đà Nẵng ấm áp:</b> Thầy tự động thuyết minh từng bước bằng phương ngữ Đà Nẵng hiền hòa, dễ hiểu cho cả các em Lớp 1 và Lớp 2.</li>
-        <li>🟢 <b>Điểm tròn nhỏ luyện mắt:</b> Giữ đầu thẳng, chỉ đưa con ngươi mắt nhìn theo điểm tròn nhỏ màu xanh trên màn hình để mắt điều tiết khỏe khoắn.</li>
-        <li>🖱 <b>Xoay 360° quanh phòng:</b> Nhấn giữ chuột và kéo (hoặc vuốt màn hình cảm ứng) để quan sát toàn cảnh phòng Tin học.</li>
-      </ul>
-      <button type="button" class="ctrl-btn good" id="btn-close-help" style="width:100%;padding:12px;font-size:1rem;" onclick="if(window.closeHelpModal) window.closeHelpModal()">
-        DẠ, CON ĐÃ HIỂU RỒI THẦY ƠI!
-      </button>
-    </div>
-  </div>
+    .popup-title {
+      font-size: 1.25rem;
+      font-weight: 900;
+      color: #0277bd;
+      margin-bottom: 8px;
+    }
 
-  <!-- 12. KHÔNG GIAN 3D THREE.JS -->
-  <div id="canvas-container"></div>
+    .popup-desc {
+      font-size: 1.02rem;
+      font-weight: 600;
+      color: #334155;
+      line-height: 1.5;
+      margin-bottom: 16px;
+    }
 
-  <!-- Tệp xử lý logic JavaScript -->
-  <script src="./script.js"></script>
-</body>
-</html>
+    .popup-actions {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    /* HIỆU ỨNG NGÔI SAO KHI NHẤP CHUỘT */
+    .click-burst {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9999;
+      transform: translate(-50%, -50%);
+      font-size: 1.9rem;
+      animation: burstAnim 0.65s ease-out forwards;
+    }
+
+    @keyframes burstAnim {
+      0% { opacity: 1; transform: translate(-50%, -50%) scale(0.5); }
+      100% { opacity: 0; transform: translate(-50%, -95%) scale(1.7); }
+    }
+
+    /* MÀN HÌNH KHỞI ĐỘNG */
+    #start-modal {
+      position: absolute;
+      inset: 0;
+      z-index: 1000;
+      background: linear-gradient(135deg, rgba(2, 136, 209, 0.96), rgba(0, 137, 123, 0.96));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      pointer-events: auto;
+    }
+
+    #start-modal.closed {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
+    .start-box {
+      background: #ffffff;
+      border-radius: 28px;
+      padding: 26px 30px;
+      max-width: 780px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.42);
+      border: 5px solid #ffca28;
+      pointer-events: auto;
+    }
+
+    .start-badge {
+      display: inline-block;
+      background: #e0f2f1;
+      color: #00695c;
+      font-weight: 800;
+      padding: 6px 18px;
+      border-radius: 20px;
+      font-size: 0.95rem;
+      margin-bottom: 8px;
+    }
+
+    .start-title {
+      color: #d84315;
+      font-size: 1.85rem;
+      font-weight: 900;
+      margin: 4px 0 8px;
+      line-height: 1.25;
+    }
+
+    .start-sub {
+      color: #37474f;
+      font-size: 1.08rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .start-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .btn-emoji {
+      font-size: 1.85rem;
+    }
+
+    .big-btn {
+      position: relative;
+      z-index: 1010;
+      border: none;
+      border-radius: 18px;
+      padding: 15px 12px;
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #fff;
+      cursor: pointer !important;
+      transition: transform 0.18s, box-shadow 0.18s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.22);
+      touch-action: manipulation;
+      pointer-events: auto !important;
+    }
+
+    .big-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .big-btn:active {
+      transform: scale(0.95);
+    }
+
+    .btn-blue { background: linear-gradient(135deg, #0288d1, #03a9f4); }
+    .btn-green { background: linear-gradient(135deg, #2e7d32, #4caf50); }
+    .btn-teal { background: linear-gradient(135deg, #00897b, #26a69a); }
+    .btn-orange { background: linear-gradient(135deg, #ef6c00, #ff9800); }
+
+    .btn-vr-start {
+      position: relative;
+      z-index: 1010;
+      background: linear-gradient(135deg, #6a1b9a, #ab47bc);
+      width: 100%;
+      padding: 14px;
+      border-radius: 16px;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+      border: none;
+      cursor: pointer !important;
+      pointer-events: auto !important;
+    }
+
+    /* THANH ĐIỀU HƯỚNG PHÍA TRÊN */
+    #top-bar {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      right: 8px;
+      z-index: 200;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      pointer-events: none;
+    }
+
+    .nav-group,
+    .util-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      background: var(--bg-panel);
+      padding: 6px 10px;
+      border-radius: 24px;
+      pointer-events: auto !important;
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.35);
+    }
+
+    .tab-btn,
+    .icon-btn {
+      border: none;
+      border-radius: 16px;
+      padding: 6px 11px;
+      font-size: 0.84rem;
+      font-weight: 700;
+      color: #fff;
+      background: rgba(255, 255, 255, 0.14);
+      cursor: pointer !important;
+      transition: 0.18s;
+      touch-action: manipulation;
+      pointer-events: auto !important;
+    }
+
+    .tab-btn:hover,
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.04);
+    }
+
+    .tab-btn:active,
+    .icon-btn:active {
+      transform: scale(0.95);
+    }
+
+    .tab-btn.active {
+      background: #ffca28 !important;
+      color: #0f172a !important;
+      box-shadow: 0 0 10px #ffca28;
+    }
+
+    .light-quick-btn {
+      background: #f59e0b !important;
+      color: #0f172a !important;
+    }
+
+    /* HỘP KHUYẾN CÁO ÁNH SÁNG */
+    #light-advisory-banner {
+      position: absolute;
+      top: 62px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 180;
+      background: linear-gradient(90deg, #b45309, #d97706);
+      color: #ffffff;
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.88rem;
+      font-weight: 700;
+      border: 2px solid #fde047;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.45);
+      max-width: 790px;
+      width: 92%;
+      text-align: center;
+      display: none;
+      pointer-events: none;
+    }
+
+    /* ĐỒNG HỒ SỬ DỤNG MÁY TÍNH */
+    #timer-widget {
+      position: absolute;
+      top: 64px;
+      right: 12px;
+      z-index: 190;
+      background: var(--bg-panel);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 16px;
+      border: 2px solid #4dd0e1;
+      text-align: center;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
+      pointer-events: auto !important;
+    }
+
+    #timer-label {
+      font-size: 0.72rem;
+      color: #80deea;
+      font-weight: 800;
+    }
+
+    #timer-display {
+      font-size: 1.32rem;
+      font-weight: 900;
+      color: #ffeb3b;
+      margin: 2px 0 5px;
+      font-family: monospace;
+    }
+
+    .mini-btn {
+      background: #00acc1;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 5px 9px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer !important;
+      pointer-events: auto !important;
+      margin: 1px;
+    }
+
+    /* THẦY GIÁO ĐÀ NẴNG (GÓC TRÁI DƯỚI) */
+    #assistant-box {
+      position: absolute;
+      bottom: 166px;
+      left: 12px;
+      z-index: 190;
+      display: flex;
+      align-items: flex-end;
+      gap: 10px;
+      max-width: 430px;
+      pointer-events: none;
+    }
+
+    .avatar-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0288d1, #26c6da);
+      border: 3px solid #ffca28;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.15rem;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+      flex-shrink: 0;
+      cursor: pointer !important;
+      pointer-events: auto !important;
+      transition: transform 0.25s;
+    }
+
+    .avatar-circle:hover {
+      transform: scale(1.08);
+    }
+
+    .avatar-circle.speaking {
+      animation: pulseTeacher 0.85s infinite alternate;
+      border-color: #00e676;
+    }
+
+    @keyframes pulseTeacher {
+      from { transform: scale(1); }
+      to { transform: scale(1.09); }
+    }
+
+    .speech-bubble {
+      background: #ffffff;
+      color: #1e293b;
+      padding: 11px 15px;
+      border-radius: 18px 18px 18px 4px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.35);
+      border: 2px solid #0288d1;
+      font-size: 0.92rem;
+      line-height: 1.44;
+      pointer-events: auto !important;
+    }
+
+    .speech-name {
+      font-weight: 800;
+      color: #0277bd;
+      font-size: 0.82rem;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .speak-again-btn {
+      background: #e1f5fe;
+      color: #0277bd;
+      border: 1px solid #0288d1;
+      border-radius: 10px;
+      padding: 3px 8px;
+      font-size: 0.74rem;
+      font-weight: 700;
+      cursor: pointer !important;
+      pointer-events: auto !important;
+    }
+
+    .speak-again-btn:hover {
+      background: #b3e5fc;
+    }
+
+    .close-bubble-btn {
+      cursor: pointer !important;
+      pointer-events: auto !important;
+      color: #64748b;
+      margin-left: 4px;
+      padding: 2px 6px;
+      font-weight: bold;
+    }
+
+    #voice-select-wrap {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed #cbd5e1;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      font-size: 0.76rem;
+    }
+
+    #voice-selector {
+      flex: 1;
+      padding: 3px 6px;
+      border-radius: 8px;
+      border: 1px solid #94a3b8;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #0f172a;
+      pointer-events: auto !important;
+    }
+
+    /* BẢNG ĐIỀU KHIỂN CHÍNH PHÍA DƯỚI */
+    #bottom-panel {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 200;
+      width: 96%;
+      max-width: 950px;
+      background: var(--bg-panel);
+      color: #fff;
+      border-radius: 22px;
+      padding: 12px 18px;
+      border: 2px solid #38bdf8;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+      text-align: center;
+      pointer-events: auto !important;
+    }
+
+    #panel-title {
+      font-size: 0.9rem;
+      font-weight: 800;
+      color: #38bdf8;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    #feedback-banner {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fef08a;
+      min-height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 4px 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    #interactive-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      pointer-events: auto !important;
+    }
+
+    .ctrl-btn {
+      background: #0288d1;
+      color: #fff;
+      border: none;
+      padding: 8px 13px;
+      border-radius: 14px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      cursor: pointer !important;
+      transition: 0.18s;
+      touch-action: manipulation;
+      pointer-events: auto !important;
+    }
+
+    .ctrl-btn:hover {
+      filter: brightness(1.15);
+      transform: translateY(-2px);
+    }
+
+    .ctrl-btn:active {
+      transform: scale(0.95);
+    }
+
+    .ctrl-btn.good { background: #2e7d32; }
+    .ctrl-btn.bad { background: #c62828; }
+    .ctrl-btn.warn { background: #ef6c00; }
+    .ctrl-btn.purple { background: #7b1fa2; }
+
+    .slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.14);
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-weight: 700;
+      font-size: 0.86rem;
+      pointer-events: auto !important;
+    }
+
+    input[type="range"] {
+      width: 155px;
+      accent-color: #00e676;
+      cursor: pointer !important;
+      pointer-events: auto !important;
+    }
+
+    /* MODAL NGHỈ NGƠI & HƯỚNG DẪN */
+    .overlay-modal {
+      position: absolute;
+      inset: 0;
+      z-index: 950;
+      background: rgba(15, 23,
