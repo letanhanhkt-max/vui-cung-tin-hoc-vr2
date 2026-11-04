@@ -26,6 +26,18 @@ body, html {
   font-size: calc(15px * var(--font-scale));
 }
 
+/* ĐẢM BẢO MỌI PHẦN TỬ CON BÊN TRONG NÚT KHÔNG CHẶN SỰ KIỆN CLICK CỦA NÚT CHA */
+.big-btn *,
+.btn-vr-start *,
+.tab-btn *,
+.icon-btn *,
+.ctrl-btn *,
+.mini-btn *,
+.relax-btn *,
+.hotspot-pin-3d * {
+  pointer-events: none !important;
+}
+
 /* KHUNG CANVAS 3D NẰM Ở TẦNG DƯỚI CÙNG (Z-INDEX: 1) */
 #canvas-container {
   width: 100%;
@@ -41,7 +53,7 @@ body, html {
   cursor: grabbing;
 }
 
-/* LỚP BIỂU TƯỢNG HOTSPOT 3D NỔI (DÙNG GPU TRANSLATE3D, KHÔNG CHẶN SỰ KIỆN NỀN) */
+/* LỚP BIỂU TƯỢNG HOTSPOT 3D NỔI */
 #hotspot-overlay-layer {
   position: absolute;
   inset: 0;
@@ -169,6 +181,12 @@ body, html {
   pointer-events: auto;
 }
 
+#start-modal.closed {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
 .start-box {
   background: #ffffff;
   border-radius: 28px;
@@ -178,6 +196,7 @@ body, html {
   text-align: center;
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.42);
   border: 5px solid #ffca28;
+  pointer-events: auto;
 }
 
 .start-badge {
@@ -215,10 +234,11 @@ body, html {
 
 .btn-emoji {
   font-size: 1.85rem;
-  pointer-events: none;
 }
 
 .big-btn {
+  position: relative;
+  z-index: 1010;
   border: none;
   border-radius: 18px;
   padding: 15px 12px;
@@ -251,6 +271,8 @@ body, html {
 .btn-orange { background: linear-gradient(135deg, #ef6c00, #ff9800); }
 
 .btn-vr-start {
+  position: relative;
+  z-index: 1010;
   background: linear-gradient(135deg, #6a1b9a, #ab47bc);
   width: 100%;
   padding: 14px;
