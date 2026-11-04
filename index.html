@@ -4,10 +4,38 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Vui Học Tin Học VR 360° - Sử Dụng Máy Tính Đúng Cách & An Toàn (Lớp 1 - 5)</title>
-  <!-- Giao diện CSS tách riêng -->
-  <link rel="stylesheet" href="style.css">
+  <!-- Giao diện CSS -->
+  <link rel="stylesheet" href="./style.css">
   <!-- Thư viện Three.js r128 từ CDN ổn định -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+  <!-- BỘ MỞ KHÓA TỨC THÌ (FAIL-SAFE BOOTSTRAPPER): Đảm bảo bấm nút vào trải nghiệm ăn ngay 100% -->
+  <script>
+    window.__pendingStartMode = null;
+    window.startApp = function(initialMode) {
+      var mode = initialMode || 'explore';
+      window.__pendingStartMode = mode;
+      var modal = document.getElementById('start-modal');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.style.visibility = 'hidden';
+        modal.style.pointerEvents = 'none';
+        modal.classList.add('closed');
+      }
+      if (typeof window.switchMode === 'function') {
+        window.switchMode(mode);
+      }
+    };
+    window.goHomeModal = function() {
+      var modal = document.getElementById('start-modal');
+      if (modal) {
+        modal.classList.remove('closed');
+        modal.style.display = 'flex';
+        modal.style.visibility = 'visible';
+        modal.style.pointerEvents = 'auto';
+      }
+    };
+  </script>
 </head>
 <body>
 
@@ -19,25 +47,25 @@
       <p class="start-sub">“Thầy chào các con nghe! Hôm ni thầy trò mình cùng khám phá phòng máy, rèn tư thế ngồi thẳng lưng, đủ ánh sáng và giữ đôi mắt sáng khỏe nhé!”</p>
       
       <div class="start-grid">
-        <button type="button" class="big-btn btn-blue" data-start-mode="explore">
+        <button type="button" class="big-btn btn-blue" data-start-mode="explore" onclick="window.startApp('explore')">
           <span class="btn-emoji">🔵</span>
           <span>KHÁM PHÁ PHÒNG MÁY</span>
         </button>
-        <button type="button" class="big-btn btn-green" data-start-mode="posture">
+        <button type="button" class="big-btn btn-green" data-start-mode="posture" onclick="window.startApp('posture')">
           <span class="btn-emoji">🟢</span>
           <span>THỰC HÀNH TƯ THẾ NGỒI</span>
         </button>
-        <button type="button" class="big-btn btn-teal" data-start-mode="eyegame">
+        <button type="button" class="big-btn btn-teal" data-start-mode="eyegame" onclick="window.startApp('eyegame')">
           <span class="btn-emoji">🟣</span>
           <span>ĐIỂM TRÒN THƯ GIÃN MẮT</span>
         </button>
-        <button type="button" class="big-btn btn-orange" data-start-mode="challenge">
+        <button type="button" class="big-btn btn-orange" data-start-mode="challenge" onclick="window.startApp('challenge')">
           <span class="btn-emoji">🟠</span>
           <span>THỬ THÁCH 6 HUY HIỆU</span>
         </button>
       </div>
 
-      <button type="button" class="btn-vr-start" id="btn-enter-vr">
+      <button type="button" class="btn-vr-start" id="btn-enter-vr" onclick="window.startApp('explore'); if(window.enterVRMode) window.enterVRMode();">
         🥽 VÀO CHẾ ĐỘ THỰC TẾ ẢO VR (WebXR / 360°)
       </button>
     </div>
@@ -52,34 +80,34 @@
     <div class="popup-title" id="popup-title">KIẾN THỨC GHI NHỚ</div>
     <div class="popup-desc" id="popup-desc">Nội dung hướng dẫn của Thầy giáo</div>
     <div class="popup-actions">
-      <button type="button" class="ctrl-btn good" id="btn-popup-go">👉 Vào thực hành ngay</button>
-      <button type="button" class="ctrl-btn" id="btn-popup-close">✓ Tiếp tục khám phá phòng</button>
+      <button type="button" class="ctrl-btn good" id="btn-popup-go" onclick="if(window.goPopupTargetMode) window.goPopupTargetMode()">👉 Vào thực hành ngay</button>
+      <button type="button" class="ctrl-btn" id="btn-popup-close" onclick="if(window.closeHotspotPopup) window.closeHotspotPopup()">✓ Tiếp tục khám phá phòng</button>
     </div>
   </div>
 
   <!-- 4. THANH CÔNG CỤ & BIỂU TƯỢNG CHƯƠNG TRÌNH PHÍA TRÊN -->
   <div id="top-bar">
     <div class="nav-group">
-      <button type="button" class="tab-btn active" data-mode="explore" id="tab-explore">🏠 Khám phá Phòng máy</button>
-      <button type="button" class="tab-btn" data-mode="posture" id="tab-posture">🪑 Tư thế ngồi</button>
-      <button type="button" class="tab-btn" data-mode="quiz" id="tab-quiz">🎯 Đố vui Tư thế</button>
-      <button type="button" class="tab-btn" data-mode="light" id="tab-light">💡 Ánh sáng</button>
-      <button type="button" class="tab-btn" data-mode="eyes" id="tab-eyes">📏 Cự ly Mắt</button>
-      <button type="button" class="tab-btn" data-mode="eyegame" id="tab-eyegame">🟢 Điểm tròn Luyện mắt</button>
-      <button type="button" class="tab-btn" data-mode="window" id="tab-window">🌿 Nhìn ra xa</button>
-      <button type="button" class="tab-btn" data-mode="mouse" id="tab-mouse">🖱 Chuột 3D</button>
-      <button type="button" class="tab-btn" data-mode="challenge" id="tab-challenge">🏆 Thử thách</button>
+      <button type="button" class="tab-btn active" data-mode="explore" id="tab-explore" onclick="if(window.switchMode) window.switchMode('explore')">🏠 Khám phá Phòng máy</button>
+      <button type="button" class="tab-btn" data-mode="posture" id="tab-posture" onclick="if(window.switchMode) window.switchMode('posture')">🪑 Tư thế ngồi</button>
+      <button type="button" class="tab-btn" data-mode="quiz" id="tab-quiz" onclick="if(window.switchMode) window.switchMode('quiz')">🎯 Đố vui Tư thế</button>
+      <button type="button" class="tab-btn" data-mode="light" id="tab-light" onclick="if(window.switchMode) window.switchMode('light')">💡 Ánh sáng</button>
+      <button type="button" class="tab-btn" data-mode="eyes" id="tab-eyes" onclick="if(window.switchMode) window.switchMode('eyes')">📏 Cự ly Mắt</button>
+      <button type="button" class="tab-btn" data-mode="eyegame" id="tab-eyegame" onclick="if(window.switchMode) window.switchMode('eyegame')">🟢 Điểm tròn Luyện mắt</button>
+      <button type="button" class="tab-btn" data-mode="window" id="tab-window" onclick="if(window.switchMode) window.switchMode('window')">🌿 Nhìn ra xa</button>
+      <button type="button" class="tab-btn" data-mode="mouse" id="tab-mouse" onclick="if(window.switchMode) window.switchMode('mouse')">🖱 Chuột 3D</button>
+      <button type="button" class="tab-btn" data-mode="challenge" id="tab-challenge" onclick="if(window.switchMode) window.switchMode('challenge')">🏆 Thử thách</button>
     </div>
 
     <div class="util-group">
-      <button type="button" class="icon-btn light-quick-btn" id="btn-quick-light">💡 Đèn: ĐANG BẬT</button>
-      <button type="button" class="icon-btn" id="btn-voice">🗣️ Giọng Thầy: BẬT</button>
-      <button type="button" class="icon-btn" id="btn-sound">🔊 Âm thanh: ON</button>
-      <button type="button" class="icon-btn" id="btn-font-inc">A+</button>
-      <button type="button" class="icon-btn" id="btn-font-dec">A-</button>
-      <button type="button" class="icon-btn" id="btn-help">❓ Hướng dẫn</button>
-      <button type="button" class="icon-btn" id="btn-home">🏡 Trang chủ</button>
-      <button type="button" class="icon-btn" id="btn-exit-vr" style="display:none;background:#c62828;">🚪 Thoát VR</button>
+      <button type="button" class="icon-btn light-quick-btn" id="btn-quick-light" onclick="if(window.quickToggleLightWithAdvisory) window.quickToggleLightWithAdvisory()">💡 Đèn: ĐANG BẬT</button>
+      <button type="button" class="icon-btn" id="btn-voice" onclick="if(window.toggleVoice) window.toggleVoice()">🗣️ Giọng Thầy: BẬT</button>
+      <button type="button" class="icon-btn" id="btn-sound" onclick="if(window.toggleSound) window.toggleSound()">🔊 Âm thanh: ON</button>
+      <button type="button" class="icon-btn" id="btn-font-inc" onclick="if(window.changeFontSize) window.changeFontSize(0.08)">A+</button>
+      <button type="button" class="icon-btn" id="btn-font-dec" onclick="if(window.changeFontSize) window.changeFontSize(-0.08)">A-</button>
+      <button type="button" class="icon-btn" id="btn-help" onclick="if(window.showHelpModal) window.showHelpModal()">❓ Hướng dẫn</button>
+      <button type="button" class="icon-btn" id="btn-home" onclick="window.goHomeModal()">🏡 Trang chủ</button>
+      <button type="button" class="icon-btn" id="btn-exit-vr" style="display:none;background:#c62828;" onclick="if(window.exitVRMode) window.exitVRMode()">🚪 Thoát VR</button>
     </div>
   </div>
 
@@ -93,21 +121,21 @@
     <div id="timer-label">⏰ THỜI GIAN DÙNG MÁY</div>
     <div id="timer-display">00:00</div>
     <div>
-      <button type="button" class="mini-btn" id="btn-timer-start">▶ BẮT ĐẦU</button>
-      <button type="button" class="mini-btn" id="btn-timer-fast" style="background:#ef6c00">⏩ 30 phút</button>
+      <button type="button" class="mini-btn" id="btn-timer-start" onclick="if(window.toggleUsageTimer) window.toggleUsageTimer()">▶ BẮT ĐẦU</button>
+      <button type="button" class="mini-btn" id="btn-timer-fast" style="background:#ef6c00" onclick="if(window.fastForward30Min) window.fastForward30Min()">⏩ 30 phút</button>
     </div>
   </div>
 
   <!-- 7. THẦY GIÁO TIN HỌC NGƯỜI ĐÀ NẴNG (GIỌNG ẤM ÁP, NHẸ NHÀNG) -->
   <div id="assistant-box">
-    <div class="avatar-circle" id="teacher-avatar" title="Nhấp vào Thầy để nghe lại lời hướng dẫn">👨‍🏫</div>
+    <div class="avatar-circle" id="teacher-avatar" title="Nhấp vào Thầy để nghe lại lời hướng dẫn" onclick="if(window.onTeacherAvatarClick) window.onTeacherAvatarClick()">👨‍🏫</div>
     <div class="speech-bubble" id="assistant-bubble">
       <div class="speech-name">
         <span>👨‍🏫 Thầy Giáo Tin Học (Đà Nẵng)</span>
         <div>
-          <button type="button" class="speak-again-btn" id="btn-speak-again">🔊 Nghe Thầy nói</button>
-          <button type="button" class="speak-again-btn" id="btn-voice-config">🎛️ Chọn giọng</button>
-          <span class="close-bubble-btn" id="btn-close-bubble">✖</span>
+          <button type="button" class="speak-again-btn" id="btn-speak-again" onclick="if(window.speakCurrentText) window.speakCurrentText()">🔊 Nghe Thầy nói</button>
+          <button type="button" class="speak-again-btn" id="btn-voice-config" onclick="if(window.toggleVoiceConfig) window.toggleVoiceConfig()">🎛️ Chọn giọng</button>
+          <span class="close-bubble-btn" id="btn-close-bubble" onclick="if(window.toggleAssistant) window.toggleAssistant()">✖</span>
         </div>
       </div>
       <div id="assistant-text">
@@ -115,7 +143,7 @@
       </div>
       <div id="voice-select-wrap">
         <span>Giọng đọc:</span>
-        <select id="voice-selector"></select>
+        <select id="voice-selector" onchange="if(window.onSelectVoiceChange) window.onSelectVoiceChange(this.value)"></select>
       </div>
     </div>
   </div>
@@ -139,13 +167,13 @@
       </p>
       <div id="rest-countdown">Thời gian thư giãn: 20 giây</div>
       <div class="relax-grid">
-        <button type="button" class="relax-btn" data-relax="window">👀 Nhìn ra xa</button>
-        <button type="button" class="relax-btn" data-relax="stretch">🙆 Vươn vai</button>
-        <button type="button" class="relax-btn" data-relax="walk">🚶 Đi lại nhẹ nhàng</button>
-        <button type="button" class="relax-btn" data-relax="water">💧 Uống nước</button>
+        <button type="button" class="relax-btn" data-relax="window" onclick="if(window.doRelaxAction) window.doRelaxAction('window')">👀 Nhìn ra xa</button>
+        <button type="button" class="relax-btn" data-relax="stretch" onclick="if(window.doRelaxAction) window.doRelaxAction('stretch')">🙆 Vươn vai</button>
+        <button type="button" class="relax-btn" data-relax="walk" onclick="if(window.doRelaxAction) window.doRelaxAction('walk')">🚶 Đi lại nhẹ nhàng</button>
+        <button type="button" class="relax-btn" data-relax="water" onclick="if(window.doRelaxAction) window.doRelaxAction('water')">💧 Uống nước</button>
       </div>
       <p id="relax-status">Hãy chọn một hoạt động thư giãn bên trên nghe!</p>
-      <button type="button" class="big-btn btn-green" id="btn-finish-rest" style="width:100%;margin-top:8px;">
+      <button type="button" class="big-btn btn-green" id="btn-finish-rest" style="width:100%;margin-top:8px;" onclick="if(window.finishRest) window.finishRest()">
         ✓ CON ĐÃ NGHỈ XONG
       </button>
     </div>
@@ -161,7 +189,7 @@
         <li>🟢 <b>Điểm tròn nhỏ luyện mắt:</b> Giữ đầu thẳng, chỉ đưa con ngươi mắt nhìn theo điểm tròn nhỏ màu xanh trên màn hình để mắt điều tiết khỏe khoắn.</li>
         <li>🖱 <b>Xoay 360° quanh phòng:</b> Nhấn giữ chuột và kéo (hoặc vuốt màn hình cảm ứng) để quan sát toàn cảnh phòng Tin học.</li>
       </ul>
-      <button type="button" class="ctrl-btn good" id="btn-close-help" style="width:100%;padding:12px;font-size:1rem;">
+      <button type="button" class="ctrl-btn good" id="btn-close-help" style="width:100%;padding:12px;font-size:1rem;" onclick="if(window.closeHelpModal) window.closeHelpModal()">
         DẠ, CON ĐÃ HIỂU RỒI THẦY ƠI!
       </button>
     </div>
@@ -170,7 +198,7 @@
   <!-- 12. KHÔNG GIAN 3D THREE.JS -->
   <div id="canvas-container"></div>
 
-  <!-- Tệp xử lý logic JavaScript tách riêng -->
-  <script src="script.js"></script>
+  <!-- Tệp xử lý logic JavaScript -->
+  <script src="./script.js"></script>
 </body>
 </html>
